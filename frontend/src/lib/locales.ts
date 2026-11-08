@@ -5,19 +5,6 @@
 export const SUPPORTED_LOCALES = [
   'en',
   'es',
-  'fr',
-  'pt',
-  'de',
-  'it',
-  'pl',
-  'nl',
-  'ro',
-  'ru',
-  'tr',
-  'sv',
-  'da',
-  'fi',
-  'hr',
 ] as const
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number]

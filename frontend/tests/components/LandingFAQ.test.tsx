@@ -88,13 +88,15 @@ describe('Landing FAQ', () => {
     const { container, rerender } = render(<FAQ />)
     const answer = () => container.querySelector('[id$="-languages-answer"]')
 
-    expect(answer()?.textContent).toMatch(/^American English, British English, Chinese/)
+    // English: Spanish, Asturian
+    expect(answer()?.textContent).toMatch(/Spanish.*Asturian|Asturian.*Spanish/)
     rerender(
       <NextIntlClientProvider locale="es" messages={spanish}>
         <LandingFAQ />
       </NextIntlClientProvider>
     )
-    expect(answer()?.textContent).toMatch(/^Alemán/)
+    // Spanish: Español, Asturianu
+    expect(answer()?.textContent).toMatch(/Español.*Asturianu|Asturianu.*Español/)
     await waitFor(() => expect(useConfigStore.getState().loaded).toBe(true))
   })
 

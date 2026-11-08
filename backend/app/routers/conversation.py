@@ -338,7 +338,7 @@ async def conversation_ws(
                 target_language = target_language_from_client
             else:
                 active_lang = await get_active_language(db, user_id)
-                target_language = active_lang.target_language if active_lang else "en-GB"
+                target_language = active_lang.target_language if active_lang else "es-ES"
 
             if (
                 not isinstance(target_language, str)

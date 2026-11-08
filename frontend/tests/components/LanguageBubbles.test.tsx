@@ -9,11 +9,9 @@ vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) =>
     namespace === 'targetLanguages'
       ? `Localized ${key}`
-      : key === 'languageGreetings.ru-RU'
-        ? 'Привет!'
-        : key === 'languageGreetings.sv-SE'
-          ? 'Hej!'
-          : key,
+      : key === 'languageGreetings.ast-ES'
+        ? '¡Hola!'
+        : key,
 }))
 
 vi.mock('@/components/lingu/LinguAvatar', () => ({
@@ -63,24 +61,13 @@ describe('LanguageBubbles', () => {
     expect(screen.getAllByRole('img', { name: /^Localized / })).toHaveLength(
       SUPPORTED_TARGET_LANGUAGES.length
     )
-    expect(screen.getByAltText('Localized de-DE')).toBeInTheDocument()
-    expect(screen.getByAltText('Localized nl-NL')).toHaveAttribute(
+    expect(screen.getByAltText('Localized es-ES')).toBeInTheDocument()
+    expect(screen.getByAltText('Localized ast-ES')).toHaveAttribute(
       'src',
-      '/flags/netherlands.jpg'
+      '/flags/asturias.jpg'
     )
-    expect(screen.getByAltText('Localized pt-BR')).toHaveAttribute(
-      'src',
-      '/flags/brazil.jpg'
-    )
-    expect(screen.getByAltText('Localized ru-RU')).toHaveAttribute(
-      'src',
-      '/flags/russia.jpg'
-    )
-    expect(screen.getByText('Привет!')).toHaveAttribute('lang', 'ru-RU')
-    expect(screen.getByText('Привет!')).toHaveClass('font-target-cyrillic')
-    expect(screen.getByAltText('Localized sv-SE')).toHaveAttribute('src', '/flags/sweden.jpg')
-    expect(screen.getByText('Hej!')).toHaveAttribute('lang', 'sv-SE')
-    expect(screen.getByText('Hej!')).toHaveClass('font-target-latin')
+    expect(screen.getByText('¡Hola!')).toHaveAttribute('lang', 'ast-ES')
+    expect(screen.getByText('¡Hola!')).toHaveClass('font-target-latin')
     expect(screen.getByRole('img', { name: 'FreeLingo' })).toBeInTheDocument()
   })
 
@@ -95,7 +82,12 @@ describe('LanguageBubbles', () => {
     const xPositions = wrappers.map((el) =>
       Number.parseFloat(el.style.getPropertyValue('--bubble-x'))
     )
-    expect(Math.max(...xPositions) - Math.min(...xPositions)).toBeGreaterThan(420)
+    const yPositions = wrappers.map((el) =>
+      Number.parseFloat(el.style.getPropertyValue('--bubble-y'))
+    )
+    // With 2 languages on ellipse: one at top (y=-140), one at bottom (y=140)
+    // x spread is 0, y spread is 280
+    expect(Math.max(...yPositions) - Math.min(...yPositions)).toBeGreaterThan(200)
     for (const wrapper of wrappers) {
       expect(wrapper).toHaveClass('relative', 'sm:absolute')
       const x = Number.parseFloat(wrapper.style.getPropertyValue('--bubble-x'))

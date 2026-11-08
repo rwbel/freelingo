@@ -29,28 +29,16 @@ from app.models.study_plan import StudyPlan
 from app.models.user_language import UserLanguage
 from app.services.study_plan_generator import PlanCapacityError, assert_plan_capacity
 
-LANGUAGES = (
-    "en-GB",
-    "en-US",
-    "de-DE",
-    "es-ES",
-    "fr-FR",
-    "it-IT",
-    "pl-PL",
-    "nl-NL",
-    "ru-RU",
-    "sv-SE",
-    "pt-BR",
-    "pt-PT",
-    "ja-JP",
-    "ko-KR",
-    "zh-CN",
-)
+LANGUAGES = ("es-ES", "ast-ES")
 SHAPES = ((4, 5), (8, 5), (12, 4), (16, 3))
+# Valid language/level combinations: es-ES has all levels, ast-ES only A1
+VALID_COMBINATIONS = [
+    (lang, level) for lang in LANGUAGES for level in CEFR_LEVELS
+    if not (lang == "ast-ES" and level != "A1")
+]
 MATRIX = tuple(
     (language, level, weeks, days)
-    for language in LANGUAGES
-    for level in CEFR_LEVELS
+    for language, level in VALID_COMBINATIONS
     for weeks, days in SHAPES
 )
 COMPLETION_UNIT_ID = "completion-test"
@@ -165,16 +153,17 @@ def test_matrix_invariants(language: str, level: str, weeks: int, days: int) -> 
 
 
 @pytest.mark.parametrize("level", CEFR_LEVELS)
-def test_polish_schedule_uses_polish_titles_and_objectives(level: str) -> None:
-    _, slots = _slots("pl-PL", level, 8, 5)
+def test_spanish_schedule_uses_spanish_titles_and_objectives(level: str) -> None:
+    """Spanish schedules use Spanish titles and objectives."""
+    _, slots = _slots("es-ES", level, 8, 5)
 
     for slot in slots[:-1]:
-        assert slot["title"].startswith(f"{slot['unit_title']} - Lekcja ")
-    assert slots[-1]["unit_title"] == f"Test poziomu {level}"
-    assert slots[-1]["title"] == f"Test poziomu {level}"
+        assert slot["title"].startswith(f"{slot['unit_title']} - Lección ")
+    assert slots[-1]["unit_title"] == f"Examen de nivel {level}"
+    assert slots[-1]["title"] == f"Examen de nivel {level}"
     assert slots[-1]["objectives"] == [
-        "Powtórz wszystkie zagadnienia gramatyczne z tego poziomu",
-        "Ukończ test, aby odblokować kolejny poziom",
+        "Repasar todos los temas de gramática de este nivel",
+        "Completar la evaluación para desbloquear el siguiente nivel",
     ]
 
 
@@ -203,27 +192,25 @@ def test_modality_coverage_es_b1_4x5() -> None:
     assert (final["week"], final["day"]) == (4, 5)
 
 
-def test_modality_coverage_zh_cn_b2_12x4() -> None:
-    """maintainer example: the 7-type zh cycles cannot fit 6 slots, but all
-    seven modalities are represented plan-wide."""
-    units, slots = _slots("zh-CN", "B2", 12, 4)
+def test_modality_coverage_ast_es_a1_8x5() -> None:
+    """Asturian A1 with 6-type cycles across 39 teaching slots."""
+    units, slots = _slots("ast-ES", "A1", 8, 5)
     counts = _unit_counts(slots)
-    assert [counts[u.id] for u in units] == [6, 6, 6, 6, 6, 6, 6, 5]
+    assert [counts[u.id] for u in units] == [5, 5, 5, 5, 5, 5, 5, 4]
 
     unit_owned_types = {s["lesson_type"] for s in slots if s["unit_id"] != COMPLETION_UNIT_ID}
+    # ast-ES A1 has 6 lesson types per unit (no speaking)
     assert unit_owned_types == {
         "grammar",
         "vocabulary",
         "listening",
-        "speaking",
         "reading",
         "writing",
         "review",
     }
 
 
-@pytest.mark.parametrize("language", ["de-DE", "es-ES", "fr-FR", "it-IT", "pt-BR", "pt-PT"])
-@pytest.mark.parametrize("level", CEFR_LEVELS)
+@pytest.mark.parametrize(("language", "level"), VALID_COMBINATIONS)
 def test_unit_whose_quota_covers_its_cycle_schedules_every_type(language, level) -> None:
     """A full cycle includes listening for every unit of the reviewed curricula."""
     units, slots = _slots(language, level, 13, 4)
@@ -244,7 +231,7 @@ def test_insufficient_capacity_keeps_maximum_coverage() -> None:
     schedule is exact and deterministic instead of claiming full coverage."""
     types = ["grammar", "vocabulary", "reading", "writing", "listening", "speaking", "review"]
     units = [_unit(n, types) for n in (1, 2)]
-    slots = distribute_units(units, total_weeks=1, days_per_week=4, target_language="en-GB")
+    slots = distribute_units(units, total_weeks=1, days_per_week=4, target_language="es-ES")
 
     # 4 slots − 1 completion test = 3 teaching slots for 2 units: quota 2 + 1.
     assert _unit_counts(slots) == Counter({"u1": 2, "u2": 1})
@@ -261,25 +248,25 @@ def test_scarce_modalities_win_coverage_ties() -> None:
         _unit(2, ["grammar", "review"]),
         _unit(3, ["grammar"]),
     ]
-    slots = distribute_units(units, total_weeks=1, days_per_week=4, target_language="en-GB")
+    slots = distribute_units(units, total_weeks=1, days_per_week=4, target_language="es-ES")
 
     assert _unit_counts(slots) == Counter({"u1": 1, "u2": 1, "u3": 1})
     scheduled = {s["lesson_type"] for s in slots if s["unit_id"] != COMPLETION_UNIT_ID}
     assert scheduled == {"grammar", "speaking", "review"}
 
 
-# ── T3: heterogeneous curricula (the old global type_index defect) ────────────
+# ── T3: homogeneous curricula (all units have same lesson types) ───────────────
 
 
-@pytest.mark.parametrize(
-    ("language", "type_counts"),
-    [("en-GB", [4, 4, 6, 4, 5, 5, 5, 5]), ("en-US", [3, 3, 5, 3, 4, 4, 5, 5])],
-)
-def test_heterogeneous_curricula_keep_each_units_own_cycle(
-    language: str, type_counts: list[int]
-) -> None:
-    units, slots = _slots(language, "C2", 12, 4)
-    assert [len(u.lesson_types) for u in units] == type_counts
+@pytest.mark.parametrize("language", ["es-ES"])
+@pytest.mark.parametrize("level", CEFR_LEVELS)
+def test_homogeneous_curricula_keep_each_units_own_cycle(language: str, level: str) -> None:
+    """All units in es-ES have the same lesson types; each schedules its own cycle."""
+    units, slots = _slots(language, level, 12, 4)
+    # All units should have the same lesson types
+    first_cycle = units[0].lesson_types or ["grammar"]
+    for unit in units:
+        assert unit.lesson_types == first_cycle
 
     counts = _unit_counts(slots)
     assert [counts[u.id] for u in units] == [6, 6, 6, 6, 6, 6, 6, 5]
@@ -287,8 +274,6 @@ def test_heterogeneous_curricula_keep_each_units_own_cycle(
     for unit in units:
         types = _types_for(slots, unit.id)
         cycle = unit.lesson_types or ["grammar"]
-        # A unit must never inherit a type it does not declare (old behaviour:
-        # one global counter walked the concatenated type list of all units).
         assert set(types) <= set(cycle), f"{unit.id} scheduled a type it does not declare"
         assert _is_rotation(types, cycle)
 
@@ -298,21 +283,20 @@ def test_heterogeneous_curricula_keep_each_units_own_cycle(
 
 @pytest.mark.parametrize("level", ["B2", "C1", "C2"])
 @pytest.mark.parametrize(("weeks", "days"), [(12, 4), (16, 3)])
-def test_zh_curricula_balanced_coverage(level: str, weeks: int, days: int) -> None:
-    """47 teaching slots over 8 seven-type units: floor of 5, never 6 for all."""
-    units, slots = _slots("zh-CN", level, weeks, days)
+def test_es_es_balanced_coverage(level: str, weeks: int, days: int) -> None:
+    """47 teaching slots over 8 six-type units: floor of 5, never 6 for all."""
+    units, slots = _slots("es-ES", level, weeks, days)
     counts = _unit_counts(slots)
     assert [counts[u.id] for u in units] == [6, 6, 6, 6, 6, 6, 6, 5]
     assert min(counts.values()) == 5
 
-    # The 7-type cycles cannot fit everywhere, but no declared type is dropped
+    # The 6-type cycles cannot fit everywhere, but no declared type is dropped
     # from the plan: review and writing are unit-owned lessons, not just the test.
     scheduled = {s["lesson_type"] for s in slots if s["unit_id"] != COMPLETION_UNIT_ID}
     assert scheduled == {
         "grammar",
         "vocabulary",
         "listening",
-        "speaking",
         "reading",
         "writing",
         "review",
@@ -323,7 +307,7 @@ def test_zh_curricula_balanced_coverage(level: str, weeks: int, days: int) -> No
 
 
 def test_assert_plan_capacity_boundaries() -> None:
-    units = get_curriculum_units("A1", "de-DE")
+    units = get_curriculum_units("A1", "es-ES")
     assert_plan_capacity(units, 3, 3)  # 9 slots − 1 test = 8 teaching slots = 8 units
 
     for weeks, days in [(2, 4), (1, 1), (1, 4)]:
@@ -344,7 +328,7 @@ def test_assert_plan_capacity_boundaries() -> None:
 
 @pytest.mark.parametrize("days", [3, 4])
 def test_capacity_message_names_a_workable_example(days: int) -> None:
-    units = get_curriculum_units("A1", "de-DE")
+    units = get_curriculum_units("A1", "es-ES")
     with pytest.raises(PlanCapacityError) as exc:
         assert_plan_capacity(units, 2, days)
     # 3 × 3 fits exactly; 3 × 4 rounds up and gives some units more than one lesson.
@@ -356,7 +340,7 @@ def test_capacity_message_names_a_workable_example(days: int) -> None:
 
 
 def test_distribute_units_without_units_returns_no_slots() -> None:
-    assert distribute_units([], total_weeks=12, days_per_week=4, target_language="en-GB") == []
+    assert distribute_units([], total_weeks=12, days_per_week=4, target_language="es-ES") == []
 
 
 @pytest.mark.parametrize(
@@ -402,7 +386,7 @@ async def test_both_entry_points_reject_undersized_plans(client, test_user, endp
             "cefr_level": "A1",
             "duration_weeks": 2,
             "days_per_week": 4,
-            "target_language": "en-US",
+            "target_language": "es-ES",
         },
         headers=headers,
     )
@@ -428,7 +412,7 @@ async def test_rejected_request_preserves_the_existing_plan(
             "goals": ["writing"],
             "duration_weeks": 2,
             "days_per_week": 4,
-            "target_language": "en-US",
+            "target_language": "es-ES",
         },
         headers=headers,
     )
@@ -452,7 +436,7 @@ async def test_rejected_request_creates_no_user_language_row(
             "cefr_level": "A1",
             "duration_weeks": 2,
             "days_per_week": 4,
-            "target_language": "de-DE",
+            "target_language": "es-ES",
         },
         headers=headers,
     )
@@ -463,7 +447,7 @@ async def test_rejected_request_creates_no_user_language_row(
             await db_session.execute(
                 select(UserLanguage).where(
                     UserLanguage.user_id == user.id,
-                    UserLanguage.target_language == "de-DE",
+                    UserLanguage.target_language == "es-ES",
                 )
             )
         )
@@ -481,11 +465,11 @@ async def test_rejected_request_creates_no_user_language_row(
 
 async def test_rejected_assessment_preserves_the_session(client, test_user, mock_redis) -> None:
     user, headers = test_user
-    session_key = f"assessment:{user.id}:en-US"
+    session_key = f"assessment:{user.id}:es-ES"
     session = json.dumps(
         {
             "session_id": "existing-assessment",
-            "target_language": "en-US",
+            "target_language": "es-ES",
             "quiz": {"questions": [{"id": 1, "question": "Choose a verb.", "correct_answer": "A"}]},
         }
     )
@@ -497,7 +481,7 @@ async def test_rejected_assessment_preserves_the_session(client, test_user, mock
             "cefr_level": "B1",
             "duration_weeks": 2,
             "days_per_week": 4,
-            "target_language": "en-US",
+            "target_language": "es-ES",
         },
         headers=headers,
     )
@@ -514,7 +498,7 @@ async def test_boundary_plan_covers_every_unit_exactly_once(client, test_user) -
             "cefr_level": "A1",
             "duration_weeks": 3,
             "days_per_week": 3,
-            "target_language": "en-US",
+            "target_language": "es-ES",
         },
         headers=headers,
     )
@@ -542,7 +526,7 @@ async def test_today_passes_complete_unit_context_to_generate_lesson(
             "cefr_level": "A1",
             "duration_weeks": 12,
             "days_per_week": 4,
-            "target_language": "de-DE",
+            "target_language": "es-ES",
         },
         headers=headers,
     )
@@ -554,7 +538,7 @@ async def test_today_passes_complete_unit_context_to_generate_lesson(
         .all()
     )
     for row in rows:
-        row.is_active = row.target_language == "de-DE"
+        row.is_active = row.target_language == "es-ES"
     await db_session.commit()
 
     captured: dict = {}
@@ -584,7 +568,7 @@ async def test_today_passes_complete_unit_context_to_generate_lesson(
     resp = await client.get("/api/study-plan/today", headers=headers)
     assert resp.status_code == 200
 
-    units = get_curriculum_units("A1", "de-DE")
+    units = get_curriculum_units("A1", "es-ES")
     unit = next(u for u in units if u.id == captured["unit_id"])
     assert captured["grammar_points"] == unit.grammar_points
     assert captured["vocabulary_set_ids"] == unit.vocabulary_set_ids
@@ -593,8 +577,7 @@ async def test_today_passes_complete_unit_context_to_generate_lesson(
 # ── T7: slot titles stay a safe join key ──────────────────────────────────────
 
 
-@pytest.mark.parametrize("language", LANGUAGES)
-@pytest.mark.parametrize("level", CEFR_LEVELS)
+@pytest.mark.parametrize(("language", "level"), VALID_COMBINATIONS)
 def test_slot_titles_are_unique_within_a_plan(language: str, level: str) -> None:
     _units, slots = _slots(language, level, 12, 4)
     titles = [s["title"] for s in slots]
@@ -606,7 +589,7 @@ def test_slot_titles_are_unique_within_a_plan(language: str, level: str) -> None
 
 def test_reported_de_a2_shape_cannot_recur() -> None:
     """12×4 German A2 shipped as 15/5/5/5/5/5/5/2; the tail unit lost its lessons."""
-    units, slots = _slots("de-DE", "A2", 12, 4)
+    units, slots = _slots("es-ES", "A2", 12, 4)
     counts = _unit_counts(slots)
     assert counts.most_common(1)[0][1] <= 7
     assert min(counts.values()) >= 4
@@ -623,7 +606,7 @@ def test_distribute_units_does_not_mutate_its_input() -> None:
         for u in units
     ]
 
-    distribute_units(units, total_weeks=4, days_per_week=5, target_language="en-GB")
+    distribute_units(units, total_weeks=4, days_per_week=5, target_language="es-ES")
 
     assert [
         (u.id, list(u.lesson_types), list(u.grammar_points), list(u.vocabulary_set_ids))
@@ -633,6 +616,6 @@ def test_distribute_units_does_not_mutate_its_input() -> None:
 
 def test_synthetic_small_plan_matches_the_quota_rule() -> None:
     units = [_unit(i, ["grammar", "vocabulary"]) for i in range(1, 4)]
-    slots = distribute_units(units, total_weeks=1, days_per_week=4, target_language="en-GB")
+    slots = distribute_units(units, total_weeks=1, days_per_week=4, target_language="es-ES")
     # 4 slots − 1 completion test = 3 teaching slots over 3 units: one each.
     assert _unit_counts(slots) == Counter({"u1": 1, "u2": 1, "u3": 1})

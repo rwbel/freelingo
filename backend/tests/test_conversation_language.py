@@ -15,48 +15,48 @@ async def test_requested_language_without_plan_does_not_borrow_active_plan(
     user = voice_runtime.user
     await make_study_plan(db_session, user_id=user.id, cefr_level="C1")
     if requested_track == "empty":
-        db_session.add(UserLanguage(user_id=user.id, target_language="ru-RU", is_active=False))
+        db_session.add(UserLanguage(user_id=user.id, target_language="ast-ES", is_active=False))
     elif requested_track == "inactive_plan":
         await make_study_plan(
-            db_session, user_id=user.id, target_language="ru-RU", cefr_level="B2", is_active=False
+            db_session, user_id=user.id, target_language="ast-ES", cefr_level="B2", is_active=False
         )
     elif requested_track == "foreign":
         other_user, _ = admin_user
         await make_study_plan(
-            db_session, user_id=other_user.id, target_language="ru-RU", cefr_level="C2"
+            db_session, user_id=other_user.id, target_language="ast-ES", cefr_level="C2"
         )
     await db_session.commit()
 
-    ws = await voice_runtime.start(target_language="ru-RU")
+    ws = await voice_runtime.start(target_language="ast-ES")
 
     ws.close.assert_not_awaited()
     voice_runtime.factory.assert_called_once()
     context = voice_runtime.factory.call_args.kwargs
-    assert context["target_language"] == "ru-RU"
+    assert context["target_language"] == "ast-ES"
     assert context["cefr_level"] == "A2"
     assert context["study_plan_id"] is None
     conversation = await db_session.get(Conversation, context["conversation_id"])
-    assert conversation.target_language == "ru-RU"
+    assert conversation.target_language == "ast-ES"
     assert conversation.study_plan_id is None
     voice_runtime.pipeline.run.assert_awaited_once_with(ws)
 
 
 @pytest.mark.parametrize(
-    "language_payload", [{}, {"target_language": None}, {"target_language": "ru-RU"}]
+    "language_payload", [{}, {"target_language": None}, {"target_language": "ast-ES"}]
 )
 async def test_voice_uses_matching_owned_plan_and_level(
     db_session, voice_runtime, language_payload
 ):
     user = voice_runtime.user
     await make_study_plan(db_session, user_id=user.id, cefr_level="C1")
-    russian_plan = await make_study_plan(
-        db_session, user_id=user.id, target_language="ru-RU", cefr_level="B1"
+    asturian_plan = await make_study_plan(
+        db_session, user_id=user.id, target_language="ast-ES", cefr_level="B1"
     )
     if language_payload.get("target_language") is None:
         await db_session.execute(
             update(UserLanguage)
             .where(UserLanguage.user_id == user.id)
-            .values(is_active=UserLanguage.id == russian_plan.user_language_id)
+            .values(is_active=UserLanguage.id == asturian_plan.user_language_id)
         )
     await db_session.commit()
 
@@ -64,15 +64,15 @@ async def test_voice_uses_matching_owned_plan_and_level(
 
     voice_runtime.factory.assert_called_once()
     context = voice_runtime.factory.call_args.kwargs
-    assert context["target_language"] == "ru-RU"
+    assert context["target_language"] == "ast-ES"
     assert context["cefr_level"] == "B1"
-    assert context["study_plan_id"] == russian_plan.id
+    assert context["study_plan_id"] == asturian_plan.id
     conversation = await db_session.get(Conversation, context["conversation_id"])
-    assert conversation.target_language == "ru-RU"
-    assert conversation.study_plan_id == russian_plan.id
+    assert conversation.target_language == "ast-ES"
+    assert conversation.study_plan_id == asturian_plan.id
 
 
-@pytest.mark.parametrize("active_language", ["ru-RU", None])
+@pytest.mark.parametrize("active_language", ["ast-ES", None])
 @pytest.mark.parametrize("language_payload", [{}, {"target_language": None}])
 async def test_voice_without_requested_language_or_plan_uses_active_or_default_language(
     db_session, voice_runtime, active_language, language_payload
@@ -92,12 +92,12 @@ async def test_voice_without_requested_language_or_plan_uses_active_or_default_l
 
     voice_runtime.factory.assert_called_once()
     context = voice_runtime.factory.call_args.kwargs
-    assert context["target_language"] == (active_language or "en-GB")
+    assert context["target_language"] == (active_language or "es-ES")
     assert context["cefr_level"] == "A2"
     assert context["study_plan_id"] is None
 
 
-@pytest.mark.parametrize("target_language", ["ru", "ru-ru", "xx-XX", "", 42, True, [], {}])
+@pytest.mark.parametrize("target_language", ["ast", "ast-es", "xx-XX", "", 42, True, [], {}])
 async def test_voice_rejects_invalid_explicit_language_before_quotas_and_persistence(
     db_session, voice_runtime, target_language
 ):
@@ -117,7 +117,7 @@ async def test_voice_rejects_invalid_stored_active_language(db_session, voice_ru
     await db_session.execute(
         update(UserLanguage)
         .where(UserLanguage.user_id == voice_runtime.user.id)
-        .values(target_language="ru")
+        .values(target_language="ast")
     )
     await db_session.commit()
 

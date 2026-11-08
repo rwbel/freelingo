@@ -92,21 +92,10 @@
     "footerProduct": "Producto",
     "footerLegal": "Legal",
     "languageGreetings": {
-      "ru-RU": "Привет!",
-      "sv-SE": "Hej!",
-      "en-US": "Hello!",
-      "en-GB": "Hello!",
-      "de-DE": "Hallo!",
-      "pl-PL": "Cześć!",
       "es-ES": "¡Hola!",
-      "fr-FR": "Bonjour !",
-      "it-IT": "Ciao!",
-      "pt-BR": "Oi!",
-      "nl-NL": "Hallo!",
-      "pt-PT": "Olá!",
-      "ja-JP": "こんにちは！",
-      "ko-KR": "안녕하세요!",
-      "zh-CN": "你好！"
+      "ast-ES": "¡Hola!",
+      "en-US": "Hello!",
+      "en-GB": "Hello!"
     }
   },
   "common": {
@@ -1479,49 +1468,12 @@
     "supportedLanguages": "Idiomas disponibles"
   },
   "targetLanguages": {
-    "sv-SE": "Sueco",
-    "sv": "Sueco",
-    "sv-SE-description": "Sueco hablado en Suecia.",
-    "ru-RU": "Ruso",
-    "ru": "Ruso",
-    "ru-RU-description": "Ruso hablado en Rusia, con el alfabeto cirílico.",
-    "nl-NL": "Neerlandés (Países Bajos)",
-    "nl": "Neerlandés",
-    "nl-NL-description": "Neerlandés hablado en los Países Bajos.",
-    "en-US": "Inglés (EEUU)",
-    "en-GB": "Inglés (UK)",
     "es-ES": "Español",
-    "it-IT": "Italiano",
-    "pt-BR": "Portugués de Brasil",
-    "pt-PT": "Portugués de Portugal",
-    "fr-FR": "Francés",
-    "de-DE": "Alemán",
-    "pl-PL": "Polaco",
-    "ja-JP": "Japonés",
-    "ko-KR": "Coreano",
-    "zh-CN": "Chino continental",
-    "en": "inglés",
     "es": "español",
-    "it": "italiano",
-    "pt": "portugués",
-    "fr": "francés",
-    "de": "alemán",
-    "pl": "Polaco",
-    "ja": "japonés",
-    "ko": "coreano",
-    "zh": "chino",
     "es-ES-description": "Español hablado en España.",
-    "it-IT-description": "Italiano hablado en Italia.",
-    "pt-BR-description": "Portugués hablado en Brasil.",
-    "pt-PT-description": "Portugués hablado en Portugal.",
-    "en-US-description": "Inglés hablado en Estados Unidos.",
-    "en-GB-description": "Inglés hablado en el Reino Unido.",
-    "fr-FR-description": "Francés hablado en Francia.",
-    "de-DE-description": "Alemán hablado en Alemania.",
-    "pl-PL-description": "Polaco tal como se habla en Polonia.",
-    "ja-JP-description": "Japonés hablado en Japón.",
-    "ko-KR-description": "Coreano hablado en Corea del Sur.",
-    "zh-CN-description": "Chino mandarín de China continental, con caracteres simplificados."
+    "ast-ES": "Asturianu",
+    "ast": "asturianu",
+    "ast-ES-description": "Asturianu faláu n'Asturies."
   },
   "onboarding": {
     "title": "Elige tu idioma",
@@ -1782,8 +1734,8 @@
     "version": "v1.12.0",
     "cta": "Entendido",
     "entry1": {
-      "label": "Nuevos idiomas: polaco, portugués de Brasil, ruso, neerlandés y sueco",
-      "desc": "Añadimos el polaco, el portugués de Brasil, el ruso, el neerlandés y el sueco como idiomas de aprendizaje, con contenidos de A1 a C2. Elígelos al empezar o añádelos desde Ajustes → Mis idiomas."
+      "label": "Nuevo idioma: asturianu",
+      "desc": "L'asturianu yá ta disponible como llingua d'aprendizaxe, con conteníu A1. Elíxelu al empecipiar o engadir dende Ajustes → Los mios idiomes."
     },
     "entry2": {
       "label": "Mejoras en el aprendizaje",

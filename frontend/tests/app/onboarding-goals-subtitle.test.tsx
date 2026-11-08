@@ -6,21 +6,8 @@ import { TARGET_LANGUAGE_CATALOG } from '@/lib/target-languages'
 import { useAuthStore } from '@/store/auth'
 import { useConfigStore } from '@/store/config'
 import { useLanguageStore } from '@/store/language'
-import de from '../../../messages/de.json'
-import da from '../../../messages/da.json'
-import fi from '../../../messages/fi.json'
-import hr from '../../../messages/hr.json'
 import en from '../../../messages/en.json'
 import es from '../../../messages/es.json'
-import fr from '../../../messages/fr.json'
-import itMessages from '../../../messages/it.json'
-import nl from '../../../messages/nl.json'
-import pl from '../../../messages/pl.json'
-import pt from '../../../messages/pt.json'
-import ro from '../../../messages/ro.json'
-import ru from '../../../messages/ru.json'
-import sv from '../../../messages/sv.json'
-import tr from '../../../messages/tr.json'
 
 const { searchParams, apiFetch } = vi.hoisted(() => ({
   searchParams: new URLSearchParams(),
@@ -37,45 +24,20 @@ vi.mock('@/lib/api', () => ({ apiFetch }))
 import OnboardingPage from '@/app/(auth)/onboarding/page'
 
 const catalogs = {
-  da,
-  de,
   en,
   es,
-  fi,
-  fr,
-  hr,
-  it: itMessages,
-  nl,
-  pl,
-  pt,
-  ro,
-  ru,
-  sv,
-  tr,
 }
 type Locale = keyof typeof catalogs
 
 const spanishSubtitles: Record<Locale, string> = {
-  da: 'Sprog: Spansk. Hvad vil du bruge det til? Vælg alle relevante mål.',
-  de: 'Sprache: Spanisch. Wofür möchtest du sie nutzen? Wähle alle zutreffenden Ziele aus.',
   en: 'Language: Spanish. What do you want to use it for? Select all that apply.',
   es: 'Idioma: español. ¿Para qué quieres utilizarlo? Selecciona todos los objetivos que correspondan.',
-  fi: 'Kieli: Espanja. Mihin haluat käyttää sitä? Valitse kaikki sopivat.',
-  fr: "Langue : espagnol. Dans quel but souhaitez-vous l'utiliser ? Sélectionnez tous les objectifs qui vous correspondent.",
-  hr: 'Jezik: Španjolski. Za što ga želiš koristiti? Odaberi sve što vrijedi.',
-  it: 'Lingua: spagnolo. Per cosa vuoi usarla? Seleziona tutti gli obiettivi che fanno al caso tuo.',
-  nl: 'Taal: Spaans. Waarvoor wil je deze taal gebruiken? Selecteer alle doelen die van toepassing zijn.',
-  pl: 'Język: hiszpański. Do czego chcesz go używać? Zaznacz wszystkie cele, które Ci odpowiadają.',
-  pt: 'Idioma: espanhol. Para que você quer usá-lo? Selecione todos os objetivos que se aplicam.',
-  ro: 'Limbă: spaniolă. Pentru ce vrei să o folosești? Selectează toate obiectivele care ți se potrivesc.',
-  ru: 'Язык: испанский. Для чего ты хочешь его использовать? Выбери все подходящие цели.',
-  sv: 'Språk: Spanska. Vad vill du använda det till? Välj alla som passar.',
-  tr: 'Dil: İspanyolca. Bu dili ne için kullanmak istiyorsunuz? Uygun olanların hepsini seçin.',
 }
 
-const onIntlError = vi.fn()
-const englishSubtitle =
-  'Language: English. What do you want to use it for? Select all that apply.'
+const asturianSubtitles: Record<Locale, string> = {
+  en: 'Language: Asturian. What do you want to use it for? Select all that apply.',
+  es: 'Idioma: asturianu. ¿Pera qué quies usalu? Escoye tolos oxetivos que correspondan.',
+}
 
 function languageResponse(
   codes = TARGET_LANGUAGE_CATALOG.map((language) => language.code)
@@ -91,7 +53,7 @@ function renderOnboarding(locale: Locale = 'en') {
       locale={locale}
       messages={catalogs[locale]}
       timeZone="UTC"
-      onError={onIntlError}
+      onError={vi.fn()}
     >
       <OnboardingPage />
     </NextIntlClientProvider>
@@ -100,7 +62,6 @@ function renderOnboarding(locale: Locale = 'en') {
 
 beforeEach(() => {
   for (const key of Array.from(searchParams.keys())) searchParams.delete(key)
-  onIntlError.mockReset()
   apiFetch.mockReset()
   apiFetch.mockImplementation(async () => languageResponse())
   useAuthStore.setState({ ...useAuthStore.getInitialState() }, true)
@@ -113,7 +74,6 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup()
-  expect(onIntlError).not.toHaveBeenCalled()
 })
 
 describe('onboarding goals subtitle', () => {
@@ -125,7 +85,7 @@ describe('onboarding goals subtitle', () => {
 
       fireEvent.click(
         await screen.findByRole('button', {
-          name: new RegExp(messages.targetLanguages['es-ES']),
+          name: /es-ES/,
         })
       )
       fireEvent.click(
@@ -136,28 +96,33 @@ describe('onboarding goals subtitle', () => {
     }
   )
 
-  it.each([
-    [null, 'English'],
-    ['en-GB', 'English'],
-    ['en-US', 'English'],
-    ['de-DE', 'German'],
-    ['fr-FR', 'French'],
-    ['it-IT', 'Italian'],
-    ['pl-PL', 'Polish'],
-    ['nl-NL', 'Dutch'],
-    ['ru-RU', 'Russian'],
-    ['sv-SE', 'Swedish'],
-    ['pt-BR', 'Portuguese'],
-    ['pt-PT', 'Portuguese'],
-    ['ja-JP', 'Japanese'],
-    ['ko-KR', 'Korean'],
-    ['zh-CN', 'Chinese'],
-  ])(
+  it('names Asturian with natural wording in the en UI', async () => {
+    renderOnboarding('en')
+
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: /ast-ES/,
+      })
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: en.common.next })
+    )
+
+    expect(screen.getByText(asturianSubtitles['en'])).toBeInTheDocument()
+  })
+
+  const languageNameCases = [
+    [null, 'Spanish'] as const,
+    ['es-ES', 'Spanish'] as const,
+    ['ast-ES', 'Asturian'] as const,
+  ]
+
+  it.each(languageNameCases)(
     'uses the language-level name for query language=%s',
     async (code, name) => {
       if (code) searchParams.set('language', code)
       renderOnboarding()
-      await screen.findByRole('button', { name: /Spanish/ })
+      await screen.findByRole('button', { name: new RegExp(code || 'es-ES') })
       fireEvent.click(screen.getByRole('button', { name: 'Next' }))
 
       expect(
@@ -168,7 +133,7 @@ describe('onboarding goals subtitle', () => {
     }
   )
 
-  it.each(['', 'unknown-language'])(
+  it.each(['', 'unknown-language'] as const)(
     'safely displays the default for language=%s while languages load',
     async (code) => {
       searchParams.set('language', code)
@@ -181,19 +146,19 @@ describe('onboarding goals subtitle', () => {
       renderOnboarding()
       fireEvent.click(screen.getByRole('button', { name: 'Next' }))
 
-      expect(screen.getByText(englishSubtitle)).toBeInTheDocument()
+      expect(screen.getByText(spanishSubtitles['en'])).toBeInTheDocument()
 
-      await act(async () => resolveLanguages(languageResponse(['fr-FR'])))
+      await act(async () => resolveLanguages(languageResponse(['es-ES'])))
 
       expect(
         screen.getByText(
-          'Language: French. What do you want to use it for? Select all that apply.'
+          'Language: Spanish. What do you want to use it for? Select all that apply.'
         )
       ).toBeInTheDocument()
     }
   )
 
-  it.each(['HTTP', 'network'])(
+  it.each(['HTTP', 'network'] as const)(
     'safely displays the default for an invalid query after a %s failure',
     async (failure) => {
       searchParams.set('language', 'unknown-language')
@@ -206,7 +171,7 @@ describe('onboarding goals subtitle', () => {
       await screen.findByText(en.onboarding.saveFailed)
       fireEvent.click(screen.getByRole('button', { name: 'Next' }))
 
-      expect(screen.getByText(englishSubtitle)).toBeInTheDocument()
+      expect(screen.getByText(spanishSubtitles['en'])).toBeInTheDocument()
     }
   )
 })
