@@ -660,7 +660,7 @@ class LLMAdapter:
                 # handler (e.g. _anthropic_chat). Preserve the type instead of
                 # re-wrapping into a generic LLMError.
                 last_error = e
-            except TimeoutError, APITimeoutError:
+            except (TimeoutError, APITimeoutError):
                 last_error = LLMTimeoutError(f"{self.provider} request timed out")
             except Exception as e:
                 if tools_requested and _is_tools_unsupported_error(e):

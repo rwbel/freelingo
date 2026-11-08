@@ -1,105 +1,22 @@
 """Pronunciation instructions for instruction-capable speech models."""
 
 _SPEECH_LANGUAGES = {
-    "en": "British English",
-    "en-US": "American English",
     "es": "Spanish from Spain",
-    "fr": "French from France",
-    "pt": "European Portuguese from Portugal",
-    "pt-BR": "Brazilian Portuguese from Brazil",
-    "de": "Standard German from Germany",
-    "it": "Standard Italian from Italy",
-    "ja": "Standard Japanese from Japan",
-    "ko": "Standard Korean from South Korea",
-    "zh": "Standard Mandarin Chinese from Mainland China",
-    "pl": "Polish from Poland",
-    "nl": "Dutch from the Netherlands",
-    "ro": "Romanian from Romania",
-    "ru": "Russian from Russia",
-    "tr": "Turkish from Turkey",
-    "sv": "Swedish from Sweden",
-    "da": "Danish from Denmark",
-    "fi": "Finnish from Finland",
-    "hr": "Croatian from Croatia",
+    "es-ES": "Spanish from Spain",
+    "ast": "Asturian from Asturias",
+    "ast-ES": "Asturian from Asturias",
 }
 
 
 _PRONUNCIATION_GUIDANCE = {
-    "en": "Use contemporary British vowel sounds and natural connected speech, without theatrical diction.",
-    "en-US": "Use natural American vowels, rhotic r, and conversational connected speech.",
     "es": (
         "Use clear, pure Spanish a, e, i, o, u vowels, without English diphthongization or schwa. "
         "Use Spanish tapped and trilled r as appropriate. For standard Spain pronunciation, "
         "distinguish s from z and c before e or i. Keep Spanish syllable timing and word stress natural."
     ),
-    "fr": (
-        "Use native French rounded and nasal vowels, French r, and appropriate liaison and enchainement. "
-        "Keep French phrase-level rhythm rather than English word stress."
-    ),
-    "pt": (
-        "Use European Portuguese unstressed-vowel reduction, nasal vowels, and consonants. "
-        "Preserve Portugal's natural rhythm and vowel quality rather than English or Brazilian patterns."
-    ),
-    "pt-BR": (
-        "Use natural Brazilian Portuguese vowels, nasalization, consonants, and conversational rhythm. "
-        "Keep a consistent Brazilian accent, with natural regional realizations of r, s, t, and d. "
-        "Avoid Portugal's strong unstressed-vowel reduction and English vowel patterns."
-    ),
-    "de": (
-        "Preserve German vowel length, umlauts, ich and ach sounds, and final devoicing. "
-        "Use native German word stress and consonants rather than English approximations."
-    ),
-    "it": (
-        "Use pure Italian vowels, meaningful double-consonant length, native r, and correct word stress. "
-        "Keep Italian syllables clear without introducing English vowel reduction."
-    ),
-    "ja": (
-        "Use natural Japanese mora timing and pitch accent. Preserve long vowels and geminate consonants; "
-        "do not impose English stress or pronounce Japanese text as English romanization."
-    ),
-    "ko": (
-        "Use native Korean vowel quality, the lax-tense-aspirated consonant distinctions, "
-        "and natural batchim, liaison, and assimilation. Keep Korean phrasing rather than English stress."
-    ),
-    "zh": (
-        "Use natural Mandarin lexical tones, neutral tones, and contextual tone sandhi. "
-        "Preserve native initials, finals, and rhythm rather than English approximations of pinyin."
-    ),
-    "pl": (
-        "Use native Polish consonant clusters, palatalization, nasal vowels, and natural word stress. "
-        "Preserve Polish sibilant distinctions instead of substituting English sounds."
-    ),
-    "nl": (
-        "Use native Dutch vowels and diphthongs, including ui and eu, with Dutch g and ch sounds. "
-        "Keep Dutch word stress and phrasing rather than English pronunciation of similar spellings."
-    ),
-    "ro": (
-        "Preserve Romanian a, ă, and â/î vowel distinctions, "
-        "native r, and lexical stress. Use Romanian vowel quality rather than English reductions."
-    ),
-    "ru": (
-        "Use native Russian lexical stress, unstressed-vowel reduction, and hard-soft consonant contrasts. "
-        "Preserve Russian r and natural phrasing rather than an English reading of transliteration."
-    ),
-    "tr": (
-        "Preserve Turkish i and ı, rounded vowels, consonant quality, and natural word stress. "
-        "Keep native vowel sounds clear rather than replacing them with English diphthongs."
-    ),
-    "sv": (
-        "Use native Swedish vowel quality, vowel-consonant length contrasts, and natural pitch accents. "
-        "Preserve Swedish melodic phrasing rather than English stress and intonation."
-    ),
-    "da": (
-        "Use native Danish vowels, soft d, natural reductions, and stød where appropriate. "
-        "Keep Danish connected speech natural rather than reading spelling with English sounds."
-    ),
-    "fi": (
-        "Preserve Finnish vowel and consonant length, native vowel quality, and initial word stress. "
-        "Keep syllables clear and rhythm natural without English vowel reduction."
-    ),
-    "hr": (
-        "Use native Croatian vowels, syllabic r, consonant distinctions, and natural lexical accent. "
-        "Avoid English diphthongs, r, and stress patterns."
+    "ast": (
+        "Use clear Asturian vowels and natural consonants. "
+        "Keep Asturian syllable timing and word stress natural."
     ),
 }
 

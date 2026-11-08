@@ -106,7 +106,7 @@ _CULTURAL_TOPICS: dict[str, list[str]] = {
         "daily life and customs in Italian cities",
         "Italian history, landmarks, and UNESCO sites",
     ],
-    "pt-BR": [
+    "es-ES": [
         "Brazilian regional food, festivals, and everyday traditions",
         "Brazilian literature, music, cinema, and cultural diversity",
         "daily life, education, work, and public transport in Brazilian cities",
@@ -142,13 +142,13 @@ _CULTURAL_TOPICS: dict[str, list[str]] = {
         "Mainland Chinese cities, transport, education, and workplace routines",
         "Chinese history, literature, arts, and cultural heritage",
     ],
-    "en-GB": [
+    "es-ES": [
         "British traditions, monarchy, and cultural life",
         "daily life and customs in UK cities and countryside",
         "British literature, theatre, and the arts",
         "UK history, landmarks, and heritage",
     ],
-    "en-US": [
+    "es-ES": [
         "American traditions, holidays, and cultural life",
         "daily life and customs in US cities and regions",
         "American literature, cinema, and popular culture",
@@ -162,7 +162,7 @@ def _get_cultural_topics(target_language: str) -> list[str]:
     if topics is not None:
         return topics
     iso = target_language.split("-")[0].lower()
-    return _CULTURAL_TOPICS.get(iso, _CULTURAL_TOPICS.get("en-GB", []))
+    return _CULTURAL_TOPICS.get(iso, _CULTURAL_TOPICS.get("es-ES", []))
 
 
 async def get_available_exercise(

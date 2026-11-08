@@ -111,7 +111,7 @@ async def _request(
             )
             response.raise_for_status()
             return RevenueCatCustomerInfo.model_validate(response.json())
-    except httpx.HTTPError, TimeoutError, ValueError:
+    except (httpx.HTTPError, TimeoutError, ValueError):
         raise RevenueCatError("RevenueCat request failed or returned invalid data") from None
 
 
@@ -203,7 +203,7 @@ async def sync_user(db: AsyncSession, user_id: int, *, import_stripe: bool = Fal
     info = await get_customer_info(user.id)
     try:
         synced_at = datetime.fromtimestamp(info.request_date_ms / 1000, UTC).replace(tzinfo=None)
-    except OverflowError, OSError, ValueError:
+    except (OverflowError, OSError, ValueError):
         raise RevenueCatError("RevenueCat returned an invalid snapshot timestamp") from None
     if user.revenuecat_synced_at is not None and synced_at < user.revenuecat_synced_at:
         return user

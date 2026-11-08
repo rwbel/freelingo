@@ -44,7 +44,7 @@ export interface PhrasebookNativeHelp {
 }
 
 export async function getPhrasebookCategories(
-  targetLanguage: string = 'en-GB'
+  targetLanguage: string = 'es-ES'
 ): Promise<PhrasebookCategory[]> {
   const res = await apiFetch(
     `/api/phrasebook?language=${encodeURIComponent(targetLanguage)}`
@@ -56,7 +56,7 @@ export async function getPhrasebookCategories(
 
 export async function getPhrasebookByLevel(
   level: string,
-  targetLanguage: string = 'en-GB'
+  targetLanguage: string = 'es-ES'
 ): Promise<PhrasebookCategory[]> {
   const res = await apiFetch(
     `/api/phrasebook/level/${encodeURIComponent(level)}?language=${encodeURIComponent(targetLanguage)}`
@@ -68,7 +68,7 @@ export async function getPhrasebookByLevel(
 
 export async function getPhrasebookNativeHelp(
   categoryId: string,
-  targetLanguage: string = 'en-GB'
+  targetLanguage: string = 'es-ES'
 ): Promise<PhrasebookNativeHelp | null> {
   const res = await apiFetch(
     `/api/phrasebook/${encodeURIComponent(categoryId)}/native-help?language=${encodeURIComponent(targetLanguage)}`,

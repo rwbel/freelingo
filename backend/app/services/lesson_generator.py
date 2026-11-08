@@ -143,7 +143,7 @@ def hint_reveals_answer(native_hint: str | None, correct_answer: str | None) -> 
     return False
 
 
-def get_valid_grammar_slugs(target_language: str = "en-GB") -> set[str]:
+def get_valid_grammar_slugs(target_language: str = "es-ES") -> set[str]:
     """Return the set of valid grammar slugs for a given target language."""
     curriculum = get_curriculum(target_language)
     return {slug for units in curriculum.values() for unit in units for slug in unit.grammar_points}
@@ -158,7 +158,7 @@ async def generate_lesson(
     unit_id: str = "",
     grammar_points: list[str] | None = None,
     vocabulary_set_ids: list[str] | None = None,
-    target_language: str = "en-GB",
+    target_language: str = "es-ES",
     native_language: str | None = None,
     previous_lessons: list[dict[str, Any]] | None = None,
 ) -> LessonContent:
@@ -211,7 +211,7 @@ async def regenerate_exercise(
     lesson_explanation: dict[str, Any],
     lesson_vocabulary: list[dict[str, Any]] | None,
     invalid_exercise: dict[str, Any],
-    target_language: str = "en-GB",
+    target_language: str = "es-ES",
     native_language: str | None = None,
 ) -> ExerciseContent:
     target_language_name = get_language_name(target_language)
@@ -259,7 +259,7 @@ async def evaluate_free_write(
     prompt: str,
     criteria: list[str],
     answer: str,
-    target_language: str = "en-GB",
+    target_language: str = "es-ES",
     native_language: str | None = None,
 ) -> FreeWriteEvaluation:
     target_language_name = get_language_name(target_language)
@@ -288,7 +288,7 @@ async def evaluate_pronunciation(
     cefr_level: str,
     target: str,
     transcription: str,
-    target_language: str = "en-GB",
+    target_language: str = "es-ES",
     native_language: str | None = None,
 ) -> PronunciationEvaluation:
     target_language_name = get_language_name(target_language)
@@ -316,7 +316,7 @@ async def evaluate_fill_blank(
     question: str,
     correct_answer: str,
     student_answer: str,
-    target_language: str = "en-GB",
+    target_language: str = "es-ES",
     native_language: str | None = None,
 ) -> FillBlankEvaluation:
     target_language_name = get_language_name(target_language)

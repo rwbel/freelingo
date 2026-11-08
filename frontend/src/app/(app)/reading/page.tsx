@@ -309,7 +309,7 @@ function ReadingPage() {
   const allAnswered = exercise
     ? Object.keys(answers).length === exercise.questions.length
     : false
-  const targetLanguageCode = activeLanguage?.code ?? 'en-GB'
+  const targetLanguageCode = activeLanguage?.code ?? 'es-ES'
 
   // ── Loading ──────────────────────────────────────────────────────────────
   if (pageState === 'loading') {

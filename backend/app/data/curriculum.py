@@ -2,8 +2,8 @@
 Language-aware curriculum dispatcher.
 
 For backward compatibility, CEFR_LEVELS remains a module-level constant.
-All curriculum queries accept a ``target_language`` parameter (e.g. "en-GB",
-"es-ES", "it-IT", "pt-PT") to resolve the correct language module.
+All curriculum queries accept a ``target_language`` parameter (e.g. "es-ES",
+"es-ES", "es-ES", "es-ES") to resolve the correct language module.
 """
 
 from __future__ import annotations
@@ -37,51 +37,6 @@ _LANG_MODULES: dict[str, str] = {
 _CACHE: dict[str, object] = {}
 
 _I18N = {
-    "sv-SE": {
-        "lesson_title": "{title} – Lektion {n}",
-        "test_unit_title": "Avslutande prov för nivå {level}",
-        "test_title": "Avslutande prov för nivå {level}",
-        "test_objectives": [
-            "Repetera nivåns grammatik och ordförråd",
-            "Gör nivåprovet för att bedöma nästa steg i ditt lärande",
-        ],
-    },
-    "ru-RU": {
-        "lesson_title": "{title} — Урок {n}",
-        "test_unit_title": "Итоговый тест уровня {level}",
-        "test_title": "Итоговый тест уровня {level}",
-        "test_objectives": [
-            "Повторить грамматику и лексику этого уровня",
-            "Пройти итоговый тест для перехода на следующий уровень",
-        ],
-    },
-    "nl-NL": {
-        "lesson_title": "{title} - Les {n}",
-        "test_unit_title": "Eindtoets niveau {level}",
-        "test_title": "Eindtoets niveau {level}",
-        "test_objectives": [
-            "Herhaal de grammatica en woordenschat van dit niveau",
-            "Maak de eindtoets om je volgende leerstap te bepalen",
-        ],
-    },
-    "en-GB": {
-        "lesson_title": "{title} - Lesson {n}",
-        "test_unit_title": "Level {level} Completion Test",
-        "test_title": "Level {level} Completion Test",
-        "test_objectives": [
-            "Review all grammar topics from this level",
-            "Complete the assessment to unlock the next level",
-        ],
-    },
-    "en-US": {
-        "lesson_title": "{title} - Lesson {n}",
-        "test_unit_title": "Level {level} Completion Test",
-        "test_title": "Level {level} Completion Test",
-        "test_objectives": [
-            "Review all grammar topics from this level",
-            "Complete the assessment to unlock the next level",
-        ],
-    },
     "es-ES": {
         "lesson_title": "{title} - Lección {n}",
         "test_unit_title": "Examen de nivel {level}",
@@ -91,89 +46,16 @@ _I18N = {
             "Completar la evaluación para desbloquear el siguiente nivel",
         ],
     },
-    "it-IT": {
-        "lesson_title": "{title} - Lezione {n}",
-        "test_unit_title": "Test di livello {level}",
-        "test_title": "Test di livello {level}",
+    "ast-ES": {
+        "lesson_title": "{title} - Lleición {n}",
+        "test_unit_title": "Exame de nivel {level}",
+        "test_title": "Exame de nivel {level}",
         "test_objectives": [
-            "Ripassare tutti gli argomenti di grammatica di questo livello",
-            "Completare la valutazione per sbloccare il livello successivo",
-        ],
-    },
-    "pl-PL": {
-        "lesson_title": "{title} - Lekcja {n}",
-        "test_unit_title": "Test poziomu {level}",
-        "test_title": "Test poziomu {level}",
-        "test_objectives": [
-            "Powtórz wszystkie zagadnienia gramatyczne z tego poziomu",
-            "Ukończ test, aby odblokować kolejny poziom",
-        ],
-    },
-    "pt-BR": {
-        "lesson_title": "{title} - Lição {n}",
-        "test_unit_title": "Avaliação de nível {level}",
-        "test_title": "Avaliação de nível {level}",
-        "test_objectives": [
-            "Revisar todos os tópicos de gramática deste nível",
-            "Concluir a avaliação para desbloquear o próximo nível",
-        ],
-    },
-    "pt-PT": {
-        "lesson_title": "{title} - Lição {n}",
-        "test_unit_title": "Exame de nível {level}",
-        "test_title": "Exame de nível {level}",
-        "test_objectives": [
-            "Rever todos os tópicos de gramática deste nível",
-            "Concluir a avaliação para desbloquear o próximo nível",
-        ],
-    },
-    "fr-FR": {
-        "lesson_title": "{title} - Leçon {n}",
-        "test_unit_title": "Test de niveau {level}",
-        "test_title": "Test de niveau {level}",
-        "test_objectives": [
-            "Revoir tous les thèmes de grammaire de ce niveau",
-            "Réussir l'évaluation pour débloquer le niveau suivant",
-        ],
-    },
-    "de-DE": {
-        "lesson_title": "{title} - Lektion {n}",
-        "test_unit_title": "Niveautest {level}",
-        "test_title": "Niveautest {level}",
-        "test_objectives": [
-            "Alle Grammatikthemen dieses Niveaus wiederholen",
-            "Die Prüfung bestehen, um das nächste Niveau freizuschalten",
-        ],
-    },
-    "ja-JP": {
-        "lesson_title": "{title} - レッスン {n}",
-        "test_unit_title": "{level} レベル修了テスト",
-        "test_title": "{level} レベル修了テスト",
-        "test_objectives": [
-            "このレベルの文法項目を復習する",
-            "評価を完了して次のレベルを解放する",
-        ],
-    },
-    "ko-KR": {
-        "lesson_title": "{title} - 레슨 {n}",
-        "test_unit_title": "{level} 레벨 완료 테스트",
-        "test_title": "{level} 레벨 완료 테스트",
-        "test_objectives": [
-            "이 레벨의 모든 문법 항목을 복습하기",
-            "평가를 완료하여 다음 레벨 잠금 해제하기",
-        ],
-    },
-    "zh-CN": {
-        "lesson_title": "{title} - 第 {n} 课",
-        "test_unit_title": "{level} 等级完成测试",
-        "test_title": "{level} 等级完成测试",
-        "test_objectives": [
-            "复习本等级的所有语法项目",
-            "完成评估以解锁下一个等级",
+            "Repasar tolos temes de gramática d'este nivel",
+            "Completar la evaluación pa desbloquiar el siguiente nivel",
         ],
     },
 }
-
 
 def _resolve_module(target_language: str) -> object:
     module_name = _LANG_MODULES.get(target_language) or _LANG_MODULES.get(

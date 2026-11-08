@@ -82,7 +82,7 @@ class ConversationPipeline:
         stt: object,
         cefr_level: str = "B1",
         native_language: str = "es",
-        target_language: str = "en-GB",
+        target_language: str = "es-ES",
         student_name: str = "Student",
         max_duration: int = 1800,
         inactivity_timeout: int = 180,
@@ -117,7 +117,7 @@ class ConversationPipeline:
                 goals = _json.loads(learning_goals)
                 if isinstance(goals, list) and goals:
                     _ctx_parts.append(f"Learning goals: {', '.join(goals)}")
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 pass
         if bio and bio.strip():
             _ctx_parts.append(f"About the student: {bio.strip()}")

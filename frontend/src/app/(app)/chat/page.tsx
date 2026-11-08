@@ -84,7 +84,7 @@ export default function ChatPage() {
   } = useTransientToast()
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const targetLanguageCode = activeLanguage?.code ?? 'en-GB'
+  const targetLanguageCode = activeLanguage?.code ?? 'es-ES'
 
   const stripeEnabled = useConfigStore((s) => s.stripeEnabled)
   const freemiumStatus = useFreemiumStore((s) => s.status)
@@ -482,7 +482,7 @@ export default function ChatPage() {
                   {t('subtitle', {
                     language: activeLanguage
                       ? tLang(activeLanguage.code)
-                      : tLang('en-GB'),
+                      : tLang('es-ES'),
                   })}
                 </p>
               </div>

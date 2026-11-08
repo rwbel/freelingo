@@ -127,7 +127,7 @@ export default function LessonPage() {
   const [grammarTopics, setGrammarTopics] = useState<GrammarTopic[]>([])
 
   useEffect(() => {
-    getGrammarTopics(activeLanguage?.code ?? 'en-GB')
+    getGrammarTopics(activeLanguage?.code ?? 'es-ES')
       .then(setGrammarTopics)
       .catch(() => setGrammarTopics([]))
   }, [activeLanguage?.code])
@@ -566,7 +566,7 @@ export default function LessonPage() {
     exercise?.exercise_type === 'multiple_choice' &&
     Array.isArray(exercise.options) &&
     exercise.options.length > 0
-  const targetLanguageCode = activeLanguage?.code ?? 'en-GB'
+  const targetLanguageCode = activeLanguage?.code ?? 'es-ES'
   const explanation = lesson?.content?.explanation as
     Record<string, unknown> | undefined
   const nativeExplanation = lesson?.content?.native_explanation as

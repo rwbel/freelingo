@@ -451,7 +451,7 @@ async def generate_game(session_id: str) -> None:
             deadline = asyncio.get_running_loop().time() + remaining
             async with asyncio.timeout_at(deadline):
                 content = await generate_content(session, deadline)
-        except TimeoutError, LLMTimeoutError:
+        except (TimeoutError, LLMTimeoutError):
             error = "timeout"
         except Exception:
             error = "generation_failed"

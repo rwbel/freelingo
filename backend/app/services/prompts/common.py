@@ -23,130 +23,21 @@ ANTHROPIC_SYSTEM_ONLY_TRIGGER = "Generate the content as specified."
 TUTOR_DISPLAY_NAME = "Lingu"
 
 _LANGUAGE_PROMPT_OVERLAYS: dict[str, str] = {
-    "sv-SE": """
-Language-specific guidance:
-- Use contemporary standard Swedish as used in Sweden. Preserve å, ä and ö as distinct letters, natural compound spelling and Swedish capitalization. Recognize regional Swedish and Finland-Swedish as valid varieties when comparing them, without replacing the selected Sweden usage.
-- Build from vowel-consonant length contrasts, vowel quality and intelligible phrase stress to en/ett gender, plurals, definiteness, adjective agreement and possessives. Introduce pitch accents through listening without imposing one regional melody as universally correct.
-- Teach verb-second main clauses by sentence constituents, not word counts; contrast subordinate-clause word order and the placement of inte. Distinguish supine after har/hade from agreeing participles, tense perspective, particle verbs and reflexive sin/sitt/sina with explicit referents. Do not calque English progressive forms or obligatory tense backshift.
-- Use du as ordinary singular address; ni is plural and is not automatically a more polite singular choice. Distinguish de/dem in neutral edited writing while recognizing dom in speech and informal contexts. Teach requests, refusals, repair and mediation through realistic interaction.
-- Progress from everyday tasks to nuanced interpretation, register, source attribution and negotiation. Preserve participants, negation scope, conditions, time and degree of commitment in reformulations. Do not mark valid contextual or regional alternatives as errors; placement questions require enough context for exactly one accepted answer.
-- Use varied Swedish everyday and cultural settings, including regional diversity, public services, associations and nature. Avoid stereotypes or treating cultural tendencies as universal rules. Explain allemansrätten with responsibilities and local restrictions rather than unlimited access claims.
-""".strip(),
-    "ru-RU": """
-Language-specific guidance:
-- Use standard contemporary Russian as used in Russia, written in Cyrillic. Preserve ё where appropriate; do not replace Russian text with transliteration. Use stress marks selectively for pronunciation teaching, not as a substitute for ordinary spelling.
-- Build from Cyrillic letters, lexical stress, vowel reduction and hard/soft consonants to gender, agreement, the six cases and verb government. Introduce case forms through communicative uses and level-appropriate examples rather than unexplained full paradigms.
-- Teach imperfective/perfective aspect through context, including process, repetition, general fact and bounded result. Do not equate aspect mechanically with tense or imply that every imperfective past action was unfinished. Distinguish unidirectional and multidirectional motion verbs and the effects of prefixes.
-- Use ты and вы consistently for the relationship and situation; explain names and patronymics without assuming that every formal exchange requires one. Respect natural Russian word order, information focus, negation and numeral agreement instead of calquing English.
-- Progress towards contextual interpretation, register control, negotiation, mediation and precise reformulation. Preserve participants, scope, source attribution and degree of certainty; distinguish valid alternatives from errors. Assessment items need enough context for exactly one accepted answer.
-- Use varied everyday and cultural contexts without assuming that all Russian speakers share one nationality, lifestyle or opinion. Explain colloquial, literary and regional usage when relevant instead of presenting it as universally interchangeable.
-""".strip(),
-    "nl-NL": """
-Language-specific guidance:
-- Use standard Dutch as used in the Netherlands, with natural vocabulary, spelling and pronunciation guidance.
-- Teach nouns with de/het and their plurals; attend to adjective endings, vowel spelling, verb-second main clauses, subordinate verb groups, separable verbs, er, and niet/geen.
-- Use je/jij or u consistently for the relationship and register. Both u hebt and u heeft are standard; recognize valid verb-cluster orders and regional standard variants rather than treating them as universal errors.
-- Build from everyday interaction to nuanced interpretation and register control. Give assessment questions enough context for exactly one answer; preserve participants, scope, certainty and source attribution in reformulations.
-- Prefer Netherlands contexts and usage such as fiets, pinpas, huisarts and gemeente. Label Belgian or Surinamese usage explicitly when comparing varieties; do not substitute German or English grammar or vocabulary.
-""".strip(),
-    "en-US": """
-Language-specific guidance:
-- Use American English spelling, vocabulary, punctuation, and idiom consistently.
-- Prefer US forms such as color, center, organize, apartment, elevator, truck, and vacation.
-- Avoid British-only spelling and vocabulary unless explicitly comparing variants.
-""".strip(),
-    "en-GB": """
-Language-specific guidance:
-- Use British English spelling, vocabulary, punctuation, and idiom consistently.
-- Prefer UK forms such as colour, centre, organise, flat, lift, lorry, and holiday.
-- Avoid American-only spelling and vocabulary unless explicitly comparing variants.
-""".strip(),
-    "es-ES": """
-Language-specific guidance:
+    "es-ES": """Language-specific guidance:
 - Use Peninsular Spanish from Spain consistently.
 - Prefer Spain usage, including vosotros for informal plural address when appropriate.
 - Avoid voseo and Latin American-only vocabulary unless explicitly comparing variants.
 - Pay close attention to accents, gender, number agreement, and natural Spain Spanish phrasing.
 """.strip(),
-    "it-IT": """
-Language-specific guidance:
-- Use standard Italian as used in Italy consistently.
-- Pay close attention to articles, gender, number agreement, articulated prepositions, and clitic pronouns.
-- Use tu or Lei consistently according to the context and learner level.
-- Avoid strong regionalisms unless explicitly teaching or comparing them.
-""".strip(),
-    "pl-PL": """
-Language-specific guidance:
-- Use standard Polish as used in Poland consistently.
-- Pay close attention to grammatical gender, case endings, verb aspect, and numeral agreement.
-- Distinguish perfective and imperfective forms whenever the meaning depends on completion, repetition, or result.
-- Avoid English word order and calques; use natural Polish phrasing and spelling with diacritics.
-""".strip(),
-    "pt-BR": """
-Language-specific guidance:
-- Use Brazilian Portuguese spelling, vocabulary, syntax, and register consistently.
-- Prefer Brazilian forms such as celular, ônibus, café da manhã, trem, banheiro, and suco.
-- Use estar + gerund for ongoing actions. Teach você/vocês with third-person agreement and a gente with singular agreement; explain regional tu usage without treating it as universally wrong.
-- Prefer natural Brazilian pronoun placement; distinguish conversational proclisis from formal written conventions. Do not mark valid optional articles before possessives or personal names as errors.
-- Use subjuntivo terminology and Brazilian cultural contexts. Avoid Portugal-only usage unless explicitly comparing varieties.
-""".strip(),
-    "pt-PT": """
-Language-specific guidance:
-- Use European Portuguese from Portugal consistently.
-- Avoid Brazilian Portuguese vocabulary, syntax, and pronoun placement unless explicitly comparing variants.
-- Prefer Portugal usage such as telemóvel, autocarro, pequeno-almoço, and comboio.
-- Pay close attention to European Portuguese clitic placement, contractions, accents, and register.
-""".strip(),
-    "fr-FR": """
-Language-specific guidance:
-- Use standard French from France consistently.
-- Pay close attention to accents, elision, contractions, gender, number agreement, and register.
-- Use tu or vous consistently according to the context and learner level.
-- Avoid Canadian or other regional French variants unless explicitly comparing them.
-""".strip(),
-    "de-DE": """
-Language-specific guidance:
-- Use standard German spelling and vocabulary as used in Germany consistently.
-- Pay close attention to noun capitalization, grammatical gender, cases, adjective endings, and verb position.
-- Use du or Sie consistently according to the context and learner level.
-- Avoid Austrian or Swiss variants unless explicitly comparing them.
-""".strip(),
-    "ja-JP": """
-Language-specific guidance:
-- Use standard Japanese as used in Japan consistently.
-- Use Japanese script naturally: hiragana, katakana, and level-appropriate kanji. Use romaji only as a short support aid for beginners or when explicitly teaching pronunciation.
-- Pay close attention to particles, politeness level, verb forms, counters, and natural word order.
-- Keep register consistent with the learner level; avoid abrupt shifts between plain and polite style unless teaching the contrast.
-""".strip(),
-    "ko-KR": """
-Language-specific guidance:
-- Use standard Korean as used in South Korea consistently.
-- Use Hangul as the primary script. Use romanization only as a short support aid for beginners or when explicitly teaching pronunciation.
-- Pay close attention to particles, speech level, honorifics, verb endings, batchim, and natural Korean phrasing.
-- Avoid North Korean vocabulary, spelling, or usage unless explicitly comparing variants.
-""".strip(),
-    "zh-CN": """
-Language-specific guidance:
-- Use Mainland China Standard Mandarin (Putonghua) consistently.
-- Use simplified Chinese characters. Use pinyin with tone marks only as support for pronunciation or beginner scaffolding, never as the main writing system.
-- Pay close attention to tones, measure words, aspect particles, word order, and natural Mainland usage.
-- Avoid Traditional Chinese, Cantonese, Taiwan, Hong Kong, or Macau variants unless explicitly comparing them.
+    "ast-ES": """Language-specific guidance:
+- Use Asturian (asturianu) as used in Asturias consistently.
+- Pay close attention to accents, gender, number agreement, and natural Asturian phrasing.
 """.strip(),
 }
 
 _LANGUAGE_PROMPT_OVERLAY_ALIASES: dict[str, str] = {
-    "sv": "sv-SE",
-    "ru": "ru-RU",
-    "nl": "nl-NL",
-    "de": "de-DE",
-    "fr": "fr-FR",
     "es": "es-ES",
-    "it": "it-IT",
-    "pl": "pl-PL",
-    "pt": "pt-PT",
-    "ja": "ja-JP",
-    "ko": "ko-KR",
-    "zh": "zh-CN",
+    "ast": "ast-ES",
 }
 
 

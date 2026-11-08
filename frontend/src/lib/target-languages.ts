@@ -37,41 +37,8 @@ export const TARGET_LANGUAGE_CAPABILITIES: Record<
   string,
   TargetLanguageCapability
 > = {
-  'en-US': LATIN_LANGUAGE_CAPABILITY,
-  'en-GB': LATIN_LANGUAGE_CAPABILITY,
   'es-ES': LATIN_LANGUAGE_CAPABILITY,
   'ast-ES': LATIN_LANGUAGE_CAPABILITY,
-  'it-IT': LATIN_LANGUAGE_CAPABILITY,
-  'pt-BR': LATIN_LANGUAGE_CAPABILITY,
-  'pt-PT': LATIN_LANGUAGE_CAPABILITY,
-  'fr-FR': LATIN_LANGUAGE_CAPABILITY,
-  'de-DE': LATIN_LANGUAGE_CAPABILITY,
-  'pl-PL': LATIN_LANGUAGE_CAPABILITY,
-  'nl-NL': LATIN_LANGUAGE_CAPABILITY,
-  'sv-SE': LATIN_LANGUAGE_CAPABILITY,
-  'ru-RU': {
-    script: 'cyrillic',
-    fontClass: 'font-target-cyrillic',
-    usesWordSpacing: true,
-  },
-  'ja-JP': {
-    script: 'hiragana-katakana-kanji',
-    fontClass: 'font-target-ja',
-    usesWordSpacing: false,
-    romanization: 'romaji',
-  },
-  'ko-KR': {
-    script: 'hangul',
-    fontClass: 'font-target-ko',
-    usesWordSpacing: true,
-    romanization: 'revised-romanization',
-  },
-  'zh-CN': {
-    script: 'simplified-hanzi',
-    fontClass: 'font-target-zh',
-    usesWordSpacing: false,
-    romanization: 'pinyin',
-  },
 }
 
 function withCapabilities(

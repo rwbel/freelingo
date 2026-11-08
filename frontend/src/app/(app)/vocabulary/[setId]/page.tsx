@@ -198,7 +198,7 @@ export default function VocabularySetPage({
     user?.native_language,
   ])
 
-  const targetLanguageCode = activeLanguage?.code ?? 'en-GB'
+  const targetLanguageCode = activeLanguage?.code ?? 'es-ES'
 
   const generateNativeHelp = useCallback(async () => {
     if (

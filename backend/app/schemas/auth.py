@@ -87,7 +87,7 @@ class RegisterRequest(BaseModel):
     password: str = Field(min_length=10, max_length=25)
     display_name: str | None = Field(default=None, max_length=100)
     native_language: str = Field(min_length=2, max_length=5)
-    target_language: str = "en-GB"
+    target_language: str = "es-ES"
     invite_token: str | None = None
 
     @field_validator("password")
@@ -170,7 +170,7 @@ class UserResponse(BaseModel):
                 parsed = json.loads(v)
                 if isinstance(parsed, list):
                     return parsed
-            except json.JSONDecodeError, ValueError:
+            except (json.JSONDecodeError, ValueError):
                 pass
         return None
 

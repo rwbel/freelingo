@@ -39,7 +39,7 @@ function seedStore(
     activeLanguage: SUPPORTED_TARGET_LANGUAGES[0],
     userLanguages: [
       {
-        target_language: 'en-US',
+        target_language: 'es-ES',
         is_active: true,
         plan: {
           id: 1,
@@ -56,7 +56,7 @@ function seedStore(
       },
     ],
     supportedLanguages: SUPPORTED_TARGET_LANGUAGES,
-    availableLanguageCodes: ['en-US', 'en-GB', 'es-ES', 'it-IT', 'pt-PT'],
+    availableLanguageCodes: ['es-ES', 'ast-ES'],
     isSwitching: false,
     fetchLanguages: vi.fn().mockResolvedValue(undefined),
     switchLanguage: vi.fn().mockResolvedValue(true),
@@ -74,20 +74,20 @@ describe('LanguageSwitcher', () => {
 
   it('renders the active language name', () => {
     render(<LanguageSwitcher />)
-    expect(screen.getByText('en-US')).toBeDefined()
+    expect(screen.getByText('es-ES')).toBeDefined()
   })
 
   it('disables both the selector and open choices during a global switch', () => {
     useLanguageStore.setState({
       userLanguages: [
         {
-          target_language: 'en-US',
+          target_language: 'es-ES',
           is_active: true,
           plan: null,
           progress: null,
         },
         {
-          target_language: 'de-DE',
+          target_language: 'ast-ES',
           is_active: false,
           plan: null,
           progress: null,
@@ -115,14 +115,14 @@ describe('LanguageSwitcher', () => {
     const button = screen.getByRole('button')
     fireEvent.click(button)
     // Dropdown shouldn't appear — only 1 language
-    expect(screen.queryByText('en-GB')).toBeNull()
+    expect(screen.queryByText('ast-ES')).toBeNull()
   })
 
   it('opens dropdown when multiple languages exist', () => {
     useLanguageStore.setState({
       userLanguages: [
         {
-          target_language: 'en-US',
+          target_language: 'es-ES',
           is_active: true,
           plan: {
             id: 1,
@@ -138,7 +138,7 @@ describe('LanguageSwitcher', () => {
           },
         },
         {
-          target_language: 'es-ES',
+          target_language: 'ast-ES',
           is_active: false,
           plan: {
             id: 2,
@@ -156,14 +156,14 @@ describe('LanguageSwitcher', () => {
     const button = screen.getByRole('button')
     fireEvent.click(button)
 
-    expect(screen.getByText('es-ES')).toBeDefined()
+    expect(screen.getByText('ast-ES')).toBeDefined()
   })
 
   it('shows CEFR level in dropdown items', () => {
     useLanguageStore.setState({
       userLanguages: [
         {
-          target_language: 'en-US',
+          target_language: 'es-ES',
           is_active: true,
           plan: {
             id: 1,
@@ -179,7 +179,7 @@ describe('LanguageSwitcher', () => {
           },
         },
         {
-          target_language: 'es-ES',
+          target_language: 'ast-ES',
           is_active: false,
           plan: {
             id: 2,
@@ -204,7 +204,7 @@ describe('LanguageSwitcher', () => {
     useLanguageStore.setState({
       userLanguages: [
         {
-          target_language: 'en-US',
+          target_language: 'es-ES',
           is_active: true,
           plan: {
             id: 1,
@@ -220,7 +220,7 @@ describe('LanguageSwitcher', () => {
           },
         },
         {
-          target_language: 'es-ES',
+          target_language: 'ast-ES',
           is_active: false,
           plan: {
             id: 2,
@@ -246,7 +246,7 @@ describe('LanguageSwitcher', () => {
     useLanguageStore.setState({
       userLanguages: [
         {
-          target_language: 'en-US',
+          target_language: 'es-ES',
           is_active: true,
           plan: {
             id: 1,
@@ -262,7 +262,7 @@ describe('LanguageSwitcher', () => {
           },
         },
         {
-          target_language: 'es-ES',
+          target_language: 'ast-ES',
           is_active: false,
           plan: {
             id: 2,
@@ -281,11 +281,11 @@ describe('LanguageSwitcher', () => {
     const button = screen.getByRole('button')
     fireEvent.click(button)
 
-    const spanishBtn = screen.getByText('es-ES')
+    const spanishBtn = screen.getByText('ast-ES')
     fireEvent.click(spanishBtn)
 
     await waitFor(() => {
-      expect(mockSwitch).toHaveBeenCalledWith('es-ES')
+      expect(mockSwitch).toHaveBeenCalledWith('ast-ES')
     })
   })
 
@@ -294,7 +294,7 @@ describe('LanguageSwitcher', () => {
     useLanguageStore.setState({
       userLanguages: [
         {
-          target_language: 'en-US',
+          target_language: 'es-ES',
           is_active: true,
           plan: {
             id: 1,
@@ -310,7 +310,7 @@ describe('LanguageSwitcher', () => {
           },
         },
         {
-          target_language: 'es-ES',
+          target_language: 'ast-ES',
           is_active: false,
           plan: {
             id: 2,
@@ -330,7 +330,7 @@ describe('LanguageSwitcher', () => {
     const button = screen.getByRole('button')
     fireEvent.click(button)
 
-    const spanishBtn = screen.getByText('es-ES')
+    const spanishBtn = screen.getByText('ast-ES')
     fireEvent.click(spanishBtn)
 
     await waitFor(() => {
@@ -343,7 +343,7 @@ describe('LanguageSwitcher', () => {
       isSwitching: true,
       userLanguages: [
         {
-          target_language: 'en-US',
+          target_language: 'es-ES',
           is_active: true,
           plan: {
             id: 1,
@@ -359,7 +359,7 @@ describe('LanguageSwitcher', () => {
           },
         },
         {
-          target_language: 'es-ES',
+          target_language: 'ast-ES',
           is_active: false,
           plan: {
             id: 2,

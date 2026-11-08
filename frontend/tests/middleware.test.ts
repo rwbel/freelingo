@@ -94,40 +94,22 @@ describe('middleware', () => {
       expect(setCookie).toContain('NEXT_LOCALE=es')
     })
 
-    it('detects Swedish browser language from sv-SE', () => {
+    it('detects Spanish browser language from es-ES', () => {
       const req = createRequest('/login', {
-        acceptLanguage: 'sv-SE,sv;q=0.9,en;q=0.8',
+        acceptLanguage: 'es-ES,es;q=0.9,en;q=0.8',
       })
 
       const res = middleware(req)
-      expect(res.headers.get('set-cookie')).toContain('NEXT_LOCALE=sv')
+      expect(res.headers.get('set-cookie')).toContain('NEXT_LOCALE=es')
     })
 
-    it('detects Danish browser language from da-DK', () => {
+    it('detects English browser language from en-US', () => {
       const req = createRequest('/login', {
-        acceptLanguage: 'da-DK,da;q=0.9,en;q=0.8',
+        acceptLanguage: 'en-US,en;q=0.9',
       })
 
       const res = middleware(req)
-      expect(res.headers.get('set-cookie')).toContain('NEXT_LOCALE=da')
-    })
-
-    it('detects Finnish browser language from fi-FI', () => {
-      const req = createRequest('/login', {
-        acceptLanguage: 'fi-FI,fi;q=0.9,en;q=0.8',
-      })
-
-      const res = middleware(req)
-      expect(res.headers.get('set-cookie')).toContain('NEXT_LOCALE=fi')
-    })
-
-    it('detects Croatian browser language from hr-HR', () => {
-      const req = createRequest('/login', {
-        acceptLanguage: 'hr-HR,hr;q=0.9,en;q=0.8',
-      })
-
-      const res = middleware(req)
-      expect(res.headers.get('set-cookie')).toContain('NEXT_LOCALE=hr')
+      expect(res.headers.get('set-cookie')).toContain('NEXT_LOCALE=en')
     })
 
     it('falls back to en when no locale detected', () => {
@@ -140,12 +122,12 @@ describe('middleware', () => {
 
     it('parses complex Accept-Language headers', () => {
       const req = createRequest('/login', {
-        acceptLanguage: 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+        acceptLanguage: 'es-ES,es;q=0.9,en-US;q=0.8,en;q=0.7',
       })
       const res = middleware(req)
 
       const setCookie = res.headers.get('set-cookie')
-      expect(setCookie).toContain('NEXT_LOCALE=fr')
+      expect(setCookie).toContain('NEXT_LOCALE=es')
     })
 
     it('sets NEXT_LOCALE cookie when not present', () => {

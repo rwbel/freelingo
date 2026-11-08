@@ -9,169 +9,25 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 _LANGUAGE_INFO: dict[str, dict[str, str]] = {
-    "en-US": {
-        "name": "English (US)",
-        "self_name": "English (US)",
-        "iso639": "en",
-        "flag": "🇺🇸",
-    },
-    "en-GB": {
-        "name": "English (UK)",
-        "self_name": "English (UK)",
-        "iso639": "en",
-        "flag": "🇬🇧",
-    },
-    "de-DE": {"name": "German", "self_name": "Deutsch", "iso639": "de", "flag": "🇩🇪"},
-    "es-ES": {
+                "es-ES": {
         "name": "Spanish (Spain)",
         "self_name": "Español (España)",
         "iso639": "es",
         "flag": "🇪🇸",
     },
-    "fr-FR": {"name": "French", "self_name": "Français", "iso639": "fr", "flag": "🇫🇷"},
-    "it-IT": {"name": "Italian", "self_name": "Italiano", "iso639": "it", "flag": "🇮🇹"},
-    "pl-PL": {"name": "Polish", "self_name": "Polski", "iso639": "pl", "flag": "🇵🇱"},
-    "ru-RU": {"name": "Russian", "self_name": "Русский", "iso639": "ru", "flag": "🇷🇺"},
-    "sv-SE": {"name": "Swedish", "self_name": "Svenska", "iso639": "sv", "flag": "🇸🇪"},
-    "nl-NL": {
-        "name": "Dutch (Netherlands)",
-        "self_name": "Nederlands",
-        "iso639": "nl",
-        "flag": "🇳🇱",
-    },
-    "pt-BR": {
-        "name": "Brazilian Portuguese",
-        "self_name": "Português (Brasil)",
-        "iso639": "pt",
-        "flag": "🇧🇷",
-    },
-    "pt-PT": {
-        "name": "European Portuguese",
-        "self_name": "Português (Portugal)",
-        "iso639": "pt",
-        "flag": "🇵🇹",
-    },
-    "ja-JP": {"name": "Japanese", "self_name": "日本語", "iso639": "ja", "flag": "🇯🇵"},
-    "ko-KR": {
-        "name": "Korean (South Korea)",
-        "self_name": "한국어",
-        "iso639": "ko",
-        "flag": "🇰🇷",
-    },
-    "zh-CN": {
-        "name": "Chinese (Mainland China)",
-        "self_name": "中文（中国）",
-        "iso639": "zh",
-        "flag": "🇨🇳",
-    },
-}
+                                            }
 
 _LANGUAGE_CAPABILITIES: dict[str, dict[str, str | bool]] = {
-    "sv-SE": {
+                            "es-ES": {
         "script": "latin",
         "romanization": "",
         "uses_word_spacing": True,
         "reading_length_unit": "words",
     },
-    "ru-RU": {
-        "script": "cyrillic",
-        "romanization": "",
-        "uses_word_spacing": True,
-        "reading_length_unit": "words",
-    },
-    "nl-NL": {
-        "script": "latin",
-        "romanization": "",
-        "uses_word_spacing": True,
-        "reading_length_unit": "words",
-    },
-    "en-US": {
-        "script": "latin",
-        "romanization": "",
-        "uses_word_spacing": True,
-        "reading_length_unit": "words",
-    },
-    "en-GB": {
-        "script": "latin",
-        "romanization": "",
-        "uses_word_spacing": True,
-        "reading_length_unit": "words",
-    },
-    "de-DE": {
-        "script": "latin",
-        "romanization": "",
-        "uses_word_spacing": True,
-        "reading_length_unit": "words",
-    },
-    "es-ES": {
-        "script": "latin",
-        "romanization": "",
-        "uses_word_spacing": True,
-        "reading_length_unit": "words",
-    },
-    "fr-FR": {
-        "script": "latin",
-        "romanization": "",
-        "uses_word_spacing": True,
-        "reading_length_unit": "words",
-    },
-    "it-IT": {
-        "script": "latin",
-        "romanization": "",
-        "uses_word_spacing": True,
-        "reading_length_unit": "words",
-    },
-    "pl-PL": {
-        "script": "latin",
-        "romanization": "",
-        "uses_word_spacing": True,
-        "reading_length_unit": "words",
-    },
-    "pt-BR": {
-        "script": "latin",
-        "romanization": "",
-        "uses_word_spacing": True,
-        "reading_length_unit": "words",
-    },
-    "pt-PT": {
-        "script": "latin",
-        "romanization": "",
-        "uses_word_spacing": True,
-        "reading_length_unit": "words",
-    },
-    "ja-JP": {
-        "script": "hiragana-katakana-kanji",
-        "romanization": "romaji",
-        "uses_word_spacing": False,
-        "reading_length_unit": "characters",
-    },
-    "ko-KR": {
-        "script": "hangul",
-        "romanization": "revised-romanization",
-        "uses_word_spacing": True,
-        "reading_length_unit": "words",
-    },
-    "zh-CN": {
-        "script": "simplified-hanzi",
-        "romanization": "pinyin",
-        "uses_word_spacing": False,
-        "reading_length_unit": "characters",
-    },
-}
+                                }
 
 _LANGUAGE_CAPABILITY_ALIASES: dict[str, str] = {
-    "sv": "sv-SE",
-    "ru": "ru-RU",
-    "nl": "nl-NL",
-    "de": "de-DE",
     "es": "es-ES",
-    "fr": "fr-FR",
-    "it": "it-IT",
-    "pl": "pl-PL",
-    "pt": "pt-PT",
-    "ja": "ja-JP",
-    "ko": "ko-KR",
-    "zh": "zh-CN",
 }
 
 _VOICE_SESSION_TITLES: dict[str, str] = {
@@ -434,25 +290,25 @@ _MONTH_NAMES: dict[str, list[str]] = {
 
 
 def get_language_name(target_language: str) -> str:
-    """'it-IT' → 'Italian', 'en-US' → 'English (US)'"""
+    """'es-ES' → 'Italian', 'es-ES' → 'English (US)'"""
     info = _LANGUAGE_INFO.get(target_language)
     return info["name"] if info else target_language
 
 
 def get_language_self_name(target_language: str) -> str:
-    """'it-IT' → 'Italiano', 'es-ES' → 'Español'"""
+    """'es-ES' → 'Italiano', 'es-ES' → 'Español'"""
     info = _LANGUAGE_INFO.get(target_language)
     return info["self_name"] if info else target_language
 
 
 def get_iso639(target_language: str) -> str:
-    """'en-US' → 'en', 'it-IT' → 'it'"""
+    """'es-ES' → 'en', 'es-ES' → 'it'"""
     info = _LANGUAGE_INFO.get(target_language)
     return info["iso639"] if info else target_language.split("-")[0].lower()
 
 
 def get_language_flag(target_language: str) -> str:
-    """'es-ES' → '🇪🇸', 'it-IT' → '🇮🇹'"""
+    """'es-ES' → '🇪🇸', 'es-ES' → '🇮🇹'"""
     info = _LANGUAGE_INFO.get(target_language)
     return info["flag"] if info else ""
 
@@ -462,7 +318,7 @@ def _get_language_capability(target_language: str) -> dict[str, str | bool]:
     if canonical_language not in _LANGUAGE_CAPABILITIES:
         iso_language = target_language.split("-")[0].lower()
         canonical_language = _LANGUAGE_CAPABILITY_ALIASES.get(iso_language, canonical_language)
-    return _LANGUAGE_CAPABILITIES.get(canonical_language, _LANGUAGE_CAPABILITIES["en-GB"])
+    return _LANGUAGE_CAPABILITIES.get(canonical_language, _LANGUAGE_CAPABILITIES["es-ES"])
 
 
 def get_language_script(target_language: str) -> str:

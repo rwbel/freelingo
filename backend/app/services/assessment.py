@@ -93,7 +93,7 @@ def evaluate_adaptive_quiz(answers: list[AnswerRecord]) -> AssessmentResult:
 
 async def evaluate_free_write(
     req: FreeWriteEvalRequest,
-    target_language: str = "en-GB",
+    target_language: str = "es-ES",
 ) -> dict:
     """Optional LLM call for the single free-write question at the end of the quiz."""
     target_language_name = get_language_name(target_language)
@@ -126,7 +126,7 @@ async def generate_level_test_questions(
     cefr_level: str,
     grammar_points_studied: list[str],
     vocabulary_sets_studied: list[str],
-    target_language: str = "en-GB",
+    target_language: str = "es-ES",
 ) -> list[dict]:
     """
     LLM-generated 20-question level completion test in the target language.

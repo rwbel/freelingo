@@ -68,7 +68,7 @@ async def generate_flashcards(
     count: int,
     cefr_level: str,
     native_language: str,
-    target_language: str = "en-GB",
+    target_language: str = "es-ES",
 ) -> FlashcardGenerateResponse:
     target_language_name = get_language_name(target_language)
     native_language_name = get_native_language_name(native_language)
@@ -103,7 +103,7 @@ async def lookup_word(
     context: str,
     cefr_level: str,
     native_language: str,
-    target_language: str = "en-GB",
+    target_language: str = "es-ES",
 ) -> FlashcardCreate:
     target_language_name = get_language_name(target_language)
     native_language_name = get_native_language_name(native_language)

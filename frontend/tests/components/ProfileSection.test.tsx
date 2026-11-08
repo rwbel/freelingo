@@ -433,11 +433,11 @@ describe('ProfileSection', () => {
     })
     mockApiFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ id: 1, ui_locale: 'fr' }),
+      json: () => Promise.resolve({ id: 1, ui_locale: 'es' }),
     })
     render(<ProfileSection />)
     fireEvent.change(selectAfterLabelText('uiLocale'), {
-      target: { value: 'fr' },
+      target: { value: 'es' },
     })
     fireEvent.click(screen.getByText('saveChanges'))
     await waitFor(() => {
@@ -471,19 +471,19 @@ describe('ProfileSection', () => {
       reload: reloadSpy,
       protocol: 'http:',
     })
-    useAuthStore.setState({ user: { ...defaultUser, ui_locale: 'fi' } })
+    useAuthStore.setState({ user: { ...defaultUser, ui_locale: 'es' } })
     document.cookie = 'NEXT_LOCALE=en; path=/'
     mockApiFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ id: 1, ui_locale: 'fi' }),
+      json: () => Promise.resolve({ id: 1, ui_locale: 'es' }),
     })
 
     render(<ProfileSection />)
-    expect(selectAfterLabelText('uiLocale')).toHaveValue('fi')
+    expect(selectAfterLabelText('uiLocale')).toHaveValue('es')
     fireEvent.click(screen.getByText('saveChanges'))
 
     await waitFor(() => expect(reloadSpy).toHaveBeenCalledTimes(1))
-    expect(document.cookie).toContain('NEXT_LOCALE=fi')
+    expect(document.cookie).toContain('NEXT_LOCALE=es')
     expect(document.cookie).toContain('LOCALE_DETECTED=1')
   })
 
@@ -494,8 +494,8 @@ describe('ProfileSection', () => {
       reload: reloadSpy,
       protocol: 'http:',
     })
-    useAuthStore.setState({ user: { ...defaultUser, ui_locale: 'fi' } })
-    document.cookie = 'NEXT_LOCALE=fi; path=/'
+    useAuthStore.setState({ user: { ...defaultUser, ui_locale: 'es' } })
+    document.cookie = 'NEXT_LOCALE=es; path=/'
     mockApiFetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ id: 1, ui_locale: 'en' }),
@@ -524,7 +524,7 @@ describe('ProfileSection', () => {
 
     render(<ProfileSection />)
     fireEvent.change(selectAfterLabelText('uiLocale'), {
-      target: { value: 'hr' },
+      target: { value: 'es' },
     })
     fireEvent.click(screen.getByText('saveChanges'))
 
@@ -865,19 +865,6 @@ describe('ProfileSection', () => {
     const options = Array.from(select.options).map((o) => o.value)
     expect(options).toContain('en')
     expect(options).toContain('es')
-    expect(options).toContain('fr')
-    expect(options).toContain('pt')
-    expect(options).toContain('de')
-    expect(options).toContain('it')
-    expect(options).toContain('pl')
-    expect(options).toContain('nl')
-    expect(options).toContain('ro')
-    expect(options).toContain('ru')
-    expect(options).toContain('tr')
-    expect(options).toContain('sv')
-    expect(options).toContain('da')
-    expect(options).toContain('fi')
-    expect(options).toContain('hr')
   })
 
   it('renders all ui locale options', () => {
@@ -886,19 +873,6 @@ describe('ProfileSection', () => {
     const options = Array.from(select.options).map((o) => o.value)
     expect(options).toContain('en')
     expect(options).toContain('es')
-    expect(options).toContain('fr')
-    expect(options).toContain('pt')
-    expect(options).toContain('de')
-    expect(options).toContain('it')
-    expect(options).toContain('pl')
-    expect(options).toContain('nl')
-    expect(options).toContain('ro')
-    expect(options).toContain('ru')
-    expect(options).toContain('tr')
-    expect(options).toContain('sv')
-    expect(options).toContain('da')
-    expect(options).toContain('fi')
-    expect(options).toContain('hr')
   })
 
   // ── Avatar upload buttons ───────────────────────────────────

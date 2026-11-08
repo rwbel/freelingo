@@ -154,21 +154,8 @@ def test_native_language_names_are_prompt_ready() -> None:
 
 def test_language_prompt_overlays_cover_supported_learning_languages() -> None:
     expected_markers = {
-        "en-US": "American English",
-        "en-GB": "British English",
         "es-ES": "Peninsular Spanish",
-        "it-IT": "standard Italian",
-        "pt-BR": "Brazilian Portuguese",
-        "pt-PT": "European Portuguese",
-        "fr-FR": "standard French",
-        "de-DE": "standard German",
-        "ja-JP": "standard Japanese",
-        "ko-KR": "standard Korean",
-        "pl-PL": "standard Polish",
-        "nl-NL": "standard Dutch",
-        "ru-RU": "Russian",
-        "sv-SE": "standard Swedish",
-        "zh-CN": "Mainland China Standard Mandarin",
+        "ast-ES": "Asturian",
     }
 
     assert expected_markers.keys() == SUPPORTED_TARGET_LANGUAGES
@@ -183,10 +170,9 @@ def test_language_prompt_overlay_falls_back_to_empty_string() -> None:
     assert get_language_prompt_overlay("unknown") == ""
 
 
-def test_language_prompt_overlay_aliases_cover_cjk_iso_codes() -> None:
-    assert get_language_prompt_overlay("ja") == get_language_prompt_overlay("ja-JP")
-    assert get_language_prompt_overlay("ko") == get_language_prompt_overlay("ko-KR")
-    assert get_language_prompt_overlay("zh") == get_language_prompt_overlay("zh-CN")
+def test_language_prompt_overlay_aliases_cover_iso_codes() -> None:
+    assert get_language_prompt_overlay("es") == get_language_prompt_overlay("es-ES")
+    assert get_language_prompt_overlay("ast") == get_language_prompt_overlay("ast-ES")
 
 
 def test_tutor_prompts_include_shared_memory_instruction() -> None:

@@ -54,7 +54,7 @@ export interface GrammarNativeHelp {
 }
 
 export async function getGrammarTopics(
-  targetLanguage: string = 'en-GB'
+  targetLanguage: string = 'es-ES'
 ): Promise<GrammarTopic[]> {
   const res = await apiFetch(
     `/api/grammar?language=${encodeURIComponent(targetLanguage)}`
@@ -66,7 +66,7 @@ export async function getGrammarTopics(
 
 export async function getGrammarNativeHelp(
   slug: string,
-  targetLanguage: string = 'en-GB'
+  targetLanguage: string = 'es-ES'
 ): Promise<GrammarNativeHelp | null> {
   const res = await apiFetch(
     `/api/grammar/${encodeURIComponent(slug)}/native-help?language=${encodeURIComponent(targetLanguage)}`,

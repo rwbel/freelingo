@@ -142,7 +142,7 @@ class GenerationLease:
                     await heartbeat
                 await generation
                 error = None
-        except TimeoutError, LLMTimeoutError, TimeoutException, APITimeoutError:
+        except (TimeoutError, LLMTimeoutError, TimeoutException, APITimeoutError):
             error = "timeout"
             logger.warning("Exercise generation timed out: %s owner=%s", self.key, self.owner)
         except GenerationInterruptedError:

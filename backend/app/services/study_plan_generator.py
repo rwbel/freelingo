@@ -58,7 +58,7 @@ def assert_plan_capacity(units: list[object], total_weeks: int, days_per_week: i
 
 async def generate_study_plan(
     request: GenerateStudyPlanRequest,
-    target_language: str = "en-GB",
+    target_language: str = "es-ES",
 ) -> GeneratedPlan:
     """
     Build a curriculum-driven study plan skeleton.

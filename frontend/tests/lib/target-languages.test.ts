@@ -25,7 +25,7 @@ describe('SUPPORTED_TARGET_LANGUAGES', () => {
     expect(lang!.name).toBeTypeOf('string')
     expect(lang!.nameEn).toBeTypeOf('string')
     expect(lang!.flagPath).toMatch(/^\/flags\/[a-zA-Z_]+\./)
-    expect(lang!.iso639).toMatch(/^[a-z]{2}$/)
+    expect(lang!.iso639).toMatch(/^[a-z]{2,3}$/)
     expect(lang!.script).toBe(catalogLang!.script)
     expect(lang!.fontClass).toBe(catalogLang!.fontClass)
     expect(lang!.usesWordSpacing).toBe(catalogLang!.usesWordSpacing)

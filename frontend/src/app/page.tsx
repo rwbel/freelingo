@@ -304,7 +304,7 @@ export default async function Home() {
                   </p>
                   <TargetLanguageText
                     as="p"
-                    languageCode="en-GB"
+                    languageCode="es-ES"
                     className="text-fl-fg text-base leading-relaxed"
                   >
                     What did you do yesterday?
@@ -316,7 +316,7 @@ export default async function Home() {
                   </p>
                   <TargetLanguageText
                     as="p"
-                    languageCode="en-GB"
+                    languageCode="es-ES"
                     className="text-fl-fg-2 text-base leading-relaxed"
                   >
                     Yesterday I go to the park.
@@ -328,7 +328,7 @@ export default async function Home() {
                   </p>
                   <TargetLanguageText
                     as="p"
-                    languageCode="en-GB"
+                    languageCode="es-ES"
                     className="text-fl-fg text-base leading-relaxed"
                   >
                     Yesterday I{' '}

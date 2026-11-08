@@ -22,7 +22,7 @@ export const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const
 
 export async function getCurriculumUnits(
   level: string,
-  targetLanguage: string = 'en-GB'
+  targetLanguage: string = 'es-ES'
 ): Promise<CurriculumUnit[]> {
   const url = `/api/curriculum/${encodeURIComponent(level)}?language=${encodeURIComponent(targetLanguage)}`
   const res = await apiFetch(url)

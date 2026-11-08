@@ -114,7 +114,7 @@ class AnalyticsService:
                     if isinstance(result, dict) and result.get("sessionId"):
                         return True
             logger.warning("[analytics] Umami did not acknowledge the event")
-        except httpx.HTTPError, TimeoutError, ValueError, TypeError:
+        except (httpx.HTTPError, TimeoutError, ValueError, TypeError):
             # Do not log payloads, headers, URLs, or provider response bodies.
             logger.warning("[analytics] Event delivery failed")
         return False

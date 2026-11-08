@@ -111,7 +111,7 @@ export default function GrammarDetailPage({
   const [nativeHelpError, setNativeHelpError] = useState(false)
 
   const topic = topics.find((t) => t.slug === slug)
-  const targetLanguageCode = activeLanguage?.code ?? 'en-GB'
+  const targetLanguageCode = activeLanguage?.code ?? 'es-ES'
   const analyticsRef = useAnalyticsView(
     'grammar_viewed',
     `${targetLanguageCode}:${slug}`

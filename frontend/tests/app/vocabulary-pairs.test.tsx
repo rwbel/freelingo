@@ -21,20 +21,20 @@ vi.mock('@/components/billing/PaywallBanner', () => ({ PaywallBanner: () => <div
 
 const choices = [2, 4, 1, 0, 3]
 const initial: VocabularyPairsSession = {
-  id: 'pairs-1', game_type: 'vocabulary-pairs', study_plan_id: 1, target_language: 'en-GB', native_language: 'es', level: 'A1',
+  id: 'pairs-1', game_type: 'vocabulary-pairs', study_plan_id: 1, target_language: 'es-ES', native_language: 'es', level: 'A1',
   mode: 'free', status: 'ready', error: null, xp_earned: 0, created_at: '2026-10-06T12:00:00Z', remaining_seconds: null,
-  challenges: ['cat', 'dog', 'book', 'house', 'tree'].map((term, index) => ({ term, index, matched: false })),
-  meanings: ['casa', 'libro', 'gato', 'árbol', 'perro'].map((text, index) => ({ text, index })), attempts: [],
+  challenges: ['gato', 'perro', 'libro', 'casa', 'árbol'].map((term, index) => ({ term, index, matched: false })),
+  meanings: ['cat', 'dog', 'book', 'house', 'tree'].map((text, index) => ({ text, index })), attempts: [],
 }
 const catalog = {
-  study_plan_id: 9, target_language: 'en-GB', level: 'A1', limited: false,
+  study_plan_id: 9, target_language: 'es-ES', level: 'A1', limited: false,
   quota: { remaining: 3, limit: 3 }, total: 0, history: [],
   modes: { review: { available: false }, prepare: { available: false }, free: { available: true } },
 }
 
 beforeEach(() => {
   vi.resetAllMocks()
-  useLanguageStore.setState({ activeLanguage: getLanguageByCode('en-GB'), needsRefresh: false, isSwitching: false })
+  useLanguageStore.setState({ activeLanguage: getLanguageByCode('es-ES'), needsRefresh: false, isSwitching: false })
   useFreemiumStore.setState({ fetchStatus: vi.fn().mockResolvedValue(undefined) })
 })
 
@@ -65,16 +65,16 @@ describe('Vocabulary Pairs', () => {
     render(<SessionPage />)
     expect(await screen.findByRole('button', { name: 'check' })).toBeDisabled()
     expect(screen.queryByRole('button', { name: /audio:/ })).not.toBeInTheDocument()
-    expect(screen.getByText('cat')).toHaveAttribute('lang', 'en-GB')
-    expect(screen.getByText('gato')).toHaveAttribute('lang', 'es')
-    await selectPair('cat', 'perro')
+    expect(screen.getByText('gato')).toHaveAttribute('lang', 'es-ES')
+    expect(screen.getByText('cat')).toHaveAttribute('lang', 'es')
+    await selectPair('gato', 'dog')
     fireEvent.click(screen.getByRole('button', { name: 'check' }))
     expect(await screen.findByText(/matchIncorrect/)).toBeInTheDocument()
-    await selectPair('cat', 'perro')
+    await selectPair('gato', 'dog')
     expect(screen.getByText('alreadyTried')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'check' })).toBeDisabled()
     // Deselect; both items remain available for another combination.
-    await selectPair('cat', 'perro')
+    await selectPair('gato', 'dog')
     for (let i = 0; i < 5; i++) {
       await selectPair(initial.challenges[i].term, initial.meanings[choices[i]].text)
       fireEvent.click(screen.getByRole('button', { name: 'check' }))
@@ -97,12 +97,12 @@ describe('Vocabulary Pairs', () => {
     const recovered = { ...initial, attempts: [{ attempt: 0, challenge: 0, choice: 4, correct: false }] }
     vi.mocked(gameRequest).mockResolvedValueOnce(initial).mockRejectedValueOnce(new Error('network')).mockResolvedValueOnce(recovered).mockResolvedValueOnce(recovered)
     render(<SessionPage />)
-    await selectPair('cat', 'perro')
+    await selectPair('gato', 'dog')
     fireEvent.click(screen.getByRole('button', { name: 'check' }))
     fireEvent.click(await screen.findByRole('button', { name: 'retry' }))
     expect(await screen.findByText(/matchIncorrect/)).toBeInTheDocument()
     expect(vi.mocked(gameRequest).mock.calls[2][0]).toBe('/sessions/pairs-1')
-    await selectPair('cat', 'gato')
+    await selectPair('gato', 'cat')
     fireEvent.click(screen.getByRole('button', { name: 'check' }))
     await waitFor(() => expect(gameRequest).toHaveBeenCalledTimes(4))
     expect(JSON.parse(String(vi.mocked(gameRequest).mock.calls[3][1]?.body))).toEqual({ step: 'match', attempt: 1, challenge: 0, choice: 2 })
@@ -113,7 +113,7 @@ describe('Vocabulary Pairs', () => {
     const pending = new Promise<VocabularyPairsSession>((done) => { resolve = done })
     vi.mocked(gameRequest).mockResolvedValueOnce(initial).mockReturnValueOnce(pending)
     const { unmount } = render(<SessionPage />)
-    await selectPair('cat', 'gato')
+    await selectPair('gato', 'cat')
     fireEvent.click(screen.getByRole('button', { name: 'check' }))
     const signal = vi.mocked(gameRequest).mock.calls[1][1]?.signal
     const invalidate = vi.spyOn(useLanguageStore.getState(), 'invalidateLanguages')

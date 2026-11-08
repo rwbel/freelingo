@@ -51,7 +51,7 @@ export default function VocabularyIndexPage() {
   const [vocabSets, setVocabSets] = useState<VocabularySet[]>([])
 
   useEffect(() => {
-    const lang = activeLanguage?.code ?? 'en-GB'
+    const lang = activeLanguage?.code ?? 'es-ES'
     apiFetch(`/api/vocabulary?language=${lang}`)
       .then((r) => r.json())
       .then((d: { sets: VocabularySet[] }) => setVocabSets(d.sets))
