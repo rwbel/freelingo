@@ -114,7 +114,7 @@ describe('Landing Home', () => {
     render(await Home())
 
     expect(mockLandingNav).toHaveBeenCalledWith(
-      expect.objectContaining({ showReviews: true }),
+      expect.objectContaining({ showReviews: true, allowRegistration: true }),
       undefined
     )
     expect(mockReviewsCarousel).toHaveBeenCalledWith(
@@ -131,7 +131,7 @@ describe('Landing Home', () => {
     render(await Home())
 
     expect(mockLandingNav).toHaveBeenCalledWith(
-      expect.objectContaining({ showReviews: false }),
+      expect.objectContaining({ showReviews: false, allowRegistration: true }),
       undefined
     )
   })

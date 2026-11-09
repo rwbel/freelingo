@@ -155,6 +155,7 @@ export default async function Home() {
       {/* Nav */}
       <LandingNav
         hasSession={hasSession}
+        allowRegistration={allowRegistration}
         stripeEnabled={stripeEnabled}
         navFeatures={t('navFeatures')}
         navReviews={t('navReviews')}
@@ -163,6 +164,7 @@ export default async function Home() {
         showReviews={reviews.length > 0 || (reviewSummary?.total ?? 0) > 0}
         signIn={t('signIn')}
         dashboard={t('dashboard')}
+        startFree={t('startFree')}
       />
 
       <main className="contents">
@@ -304,7 +306,7 @@ export default async function Home() {
                   </p>
                   <TargetLanguageText
                     as="p"
-                    languageCode="es-ES"
+                    languageCode="en-GB"
                     className="text-fl-fg text-base leading-relaxed"
                   >
                     What did you do yesterday?
@@ -316,7 +318,7 @@ export default async function Home() {
                   </p>
                   <TargetLanguageText
                     as="p"
-                    languageCode="es-ES"
+                    languageCode="en-GB"
                     className="text-fl-fg-2 text-base leading-relaxed"
                   >
                     Yesterday I go to the park.
@@ -328,7 +330,7 @@ export default async function Home() {
                   </p>
                   <TargetLanguageText
                     as="p"
-                    languageCode="es-ES"
+                    languageCode="en-GB"
                     className="text-fl-fg text-base leading-relaxed"
                   >
                     Yesterday I{' '}

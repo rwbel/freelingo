@@ -9,6 +9,7 @@ import { hasActiveLandingSubscription } from '@/lib/landing-subscription'
 
 interface LandingNavProps {
   hasSession: boolean
+  allowRegistration: boolean
   stripeEnabled: boolean
   navFeatures: string
   navReviews: string
@@ -17,10 +18,12 @@ interface LandingNavProps {
   showReviews: boolean
   signIn: string
   dashboard: string
+  startFree: string
 }
 
 export function LandingNav({
   hasSession,
+  allowRegistration,
   stripeEnabled,
   navFeatures,
   navReviews,
@@ -29,6 +32,7 @@ export function LandingNav({
   showReviews,
   signIn,
   dashboard,
+  startFree,
 }: LandingNavProps) {
   const tCommon = useTranslations('common')
   const [open, setOpen] = useState(false)
@@ -100,6 +104,15 @@ export function LandingNav({
       >
         {hasSession ? dashboard : signIn}
       </Link>
+      {!hasSession && allowRegistration && (
+        <Link
+          href="/register"
+          onClick={() => setOpen(false)}
+          className="bg-fl-accent text-fl-accent-fg hover:bg-fl-accent/90 focus-visible:outline-fl-accent inline-flex items-center justify-center px-3 py-2 font-sans text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 motion-reduce:transition-none"
+        >
+          {startFree}
+        </Link>
+      )}
     </>
   )
 

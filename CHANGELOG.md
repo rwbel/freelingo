@@ -14,12 +14,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Changed
 
 - Billing rejects a new checkout for an already-subscribed account; RevenueCat-managed access preserves the last confirmed state during delayed renewals or provider failures and applies entitlement expiry and grace periods through verified reconciliation.
+- Anonymous landing visitors see a dedicated free-start navigation action only while registration is enabled.
 - Portuguese language selectors explicitly distinguish Brazil from Portugal, using separate flags and localized labels.
 - What's New highlights Polish, Brazilian Portuguese, Dutch, Russian, and Swedish together in the first entry, across all interface languages.
 - Public and authenticated FAQs list study languages alphabetically by their translated names in the active interface language.
 
 ### Fixed
 
+- The landing microdemo preserves `en-GB` metadata for its English target-language content.
 - Paywalls show no-charge-today terms only when a Stripe trial is configured and the user has not already used it.
 - Paywall and Settings checkout actions refresh the profile when billing confirms an existing Premium subscription, removing stale purchase prompts without opening another checkout.
 - Stripe Customer Portal creation is asynchronous and returns a controlled unavailable response on provider failure, including the RevenueCat fallback.
