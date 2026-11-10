@@ -114,6 +114,8 @@ export default async function Home() {
   const showFreeNote = !hasSession && allowRegistration && stripeEnabled
   const startClassName =
     'bg-fl-accent text-fl-accent-fg hover:bg-fl-accent/90 focus-visible:outline-fl-accent inline-flex items-center justify-center gap-3 px-6 py-3 text-center font-sans text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 motion-reduce:transition-none'
+  const registerClassName =
+    'border-fl-border text-fl-muted-1 hover:text-fl-fg hover:border-fl-border-2 focus-visible:outline-fl-accent inline-flex items-center justify-center gap-2 border px-6 py-3 font-sans text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 motion-reduce:transition-none'
 
   return (
     <div className="bg-fl-bg text-fl-fg flex min-h-screen flex-col">
@@ -189,9 +191,14 @@ export default async function Home() {
               {startLabel}
               <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
             </Link>
+            {!hasSession && allowRegistration && (
+              <Link href="/register" className={registerClassName}>
+                {tCommon('register')}
+              </Link>
+            )}
             <a
               href="#features"
-              className="border-fl-border text-fl-muted-1 hover:text-fl-fg hover:border-fl-border-2 focus-visible:outline-fl-accent inline-flex items-center justify-center gap-2 border px-6 py-3 font-sans text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 motion-reduce:transition-none"
+              className={registerClassName}
             >
               {t('howItWorks')}
               <ArrowDown className="size-4 shrink-0" aria-hidden="true" />

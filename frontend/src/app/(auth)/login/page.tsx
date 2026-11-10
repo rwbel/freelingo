@@ -9,7 +9,6 @@ import { Loader2 } from 'lucide-react'
 import { apiFetch } from '@/lib/api'
 import { mapUser } from '@/lib/mappers'
 import { useAuthStore } from '@/store/auth'
-import { useConfigStore } from '@/store/config'
 
 function LoginForm() {
   const t = useTranslations('auth.login')
@@ -17,12 +16,6 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const registered = searchParams.get('registered') === 'true'
-  const allowRegistration = useConfigStore((s) => s.allowRegistration)
-  const loadConfig = useConfigStore((s) => s.load)
-
-  useEffect(() => {
-    void loadConfig()
-  }, [loadConfig])
 
   const startSession = useAuthStore((s) => s.startSession)
   const setUser = useAuthStore((s) => s.setUser)
@@ -234,17 +227,15 @@ function LoginForm() {
             </button>
           </form>
 
-          {allowRegistration && (
-            <p className="text-fl-label text-fl-muted-2 mt-6 text-center font-mono tracking-wide">
-              {t('noAccount')}{' '}
-              <Link
-                href="/register"
-                className="text-fl-muted-1 hover:text-fl-fg transition-colors"
-              >
-                {t('register')}
-              </Link>
-            </p>
-          )}
+          <p className="text-fl-label text-fl-muted-2 mt-6 text-center font-mono tracking-wide">
+            {t('noAccount')}{' '}
+            <Link
+              href="/register"
+              className="text-fl-muted-1 hover:text-fl-fg transition-colors"
+            >
+              {t('register')}
+            </Link>
+          </p>
           <p className="text-fl-label text-fl-muted-4 mt-3 text-center font-mono tracking-wide">
             <Link
               href="/forgot-password"

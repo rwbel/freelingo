@@ -17,8 +17,8 @@
       "selfHosted": {
         "title": "Autoalojado · Tú lo gestionas",
         "description": "Instala FreeLingo en tu infraestructura y elige los proveedores de IA y voz.",
-        "setup": "Controla la instalación, la configuración y el almacenamiento de datos.",
-        "access": "Software libre y gratuito bajo AGPL-3.0.",
+        "setup": "Controla la instalación, la configuración y el almacenamiento local de datos en tu infraestructura.",
+        "access": "Software libre y gratuito bajo AGPL-3.0, sin procesos KYC.",
         "cost": "La infraestructura, el mantenimiento y los posibles costes de proveedores corren por tu cuenta.",
         "cta": "Guía de instalación"
       }

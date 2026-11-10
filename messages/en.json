@@ -17,8 +17,8 @@
       "selfHosted": {
         "title": "Self-hosted · You manage it",
         "description": "Run FreeLingo on your infrastructure and choose your AI and voice providers.",
-        "setup": "Control your installation, configuration and data storage.",
-        "access": "Free, open-source software under AGPL-3.0.",
+        "setup": "Control your installation, configuration and local data storage on your own infrastructure.",
+        "access": "Free, open-source software under AGPL-3.0 with no KYC process.",
         "cost": "You cover infrastructure, maintenance and any external provider costs.",
         "cta": "Installation guide"
       }
