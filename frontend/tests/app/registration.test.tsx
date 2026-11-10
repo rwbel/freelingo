@@ -253,32 +253,19 @@ describe('registration availability', () => {
     }
   )
 
-  it.each([true, false])(
-    'shows the login signup link only for registration=%s',
-    async (allowRegistration) => {
-      vi.mocked(fetch).mockResolvedValueOnce(configResponse(allowRegistration))
-      render(<LoginPage />)
-      await waitFor(() => expect(useConfigStore.getState().loaded).toBe(true))
-      if (allowRegistration) {
-        expect(
-          screen.getByRole('link', { name: 'auth.login.register' })
-        ).toHaveAttribute('href', '/register')
-      } else {
-        expect(
-          screen.queryByRole('link', { name: 'auth.login.register' })
-        ).not.toBeInTheDocument()
-        expect(
-          screen.queryByText('auth.login.noAccount')
-        ).not.toBeInTheDocument()
-      }
-      expect(
-        screen.getByRole('button', { name: 'auth.login.submit' })
-      ).toBeInTheDocument()
-      expect(
-        screen.getByRole('link', { name: 'auth.login.forgotPassword' })
-      ).toHaveAttribute('href', '/forgot-password')
-    }
-  )
+  it('always shows the login register link', () => {
+    render(<LoginPage />)
+    expect(screen.getByRole('link', { name: 'auth.login.register' })).toHaveAttribute(
+      'href',
+      '/register'
+    )
+    expect(screen.getByText('auth.login.noAccount')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'auth.login.submit' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'auth.login.forgotPassword' })).toHaveAttribute(
+      'href',
+      '/forgot-password'
+    )
+  })
 
   it('preserves the supplied invite in registration legal links', async () => {
     searchParams.set('invite', 'token+with/symbols')
