@@ -59,7 +59,7 @@ Registration, authentication, and user preferences.
 - `display_name` — string shown in the UI.
 - `hashed_password` — bcrypt hash.
 - `role` — string: `"admin"` or `"user"`.
-- `native_language` — string such as `"es"` or `"fr"`; used for flashcard translations and tutor feedback.
+- `native_language` — string such as `"es"` or `"ast"`; used for flashcard translations and tutor feedback.
 - `target_language` — BCP-47 compatibility mirror, default `en-GB`; active context comes from `UserLanguage` and resource context from `StudyPlan`.
 - `ui_locale` — nullable UI locale code.
 - `flashcard_back_content` — varchar(20), non-null, default `definition` (ORM and database). Account-wide standard flashcard reverse-side preference: `definition` or `translation`, validated by the preferences API.

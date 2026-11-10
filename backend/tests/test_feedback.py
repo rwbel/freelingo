@@ -599,7 +599,7 @@ async def test_delete_entry_not_author(client, test_user, db_session):
         display_name="Other",
         hashed_password=hash_password("pass"),
         role="user",
-        native_language="en",
+        native_language="es",
         is_active=True,
     )
     db_session.add(other)
@@ -1019,7 +1019,7 @@ async def test_delete_comment_not_author(client, test_user, db_session):
         display_name="Other",
         hashed_password=hash_password("pass"),
         role="user",
-        native_language="en",
+        native_language="es",
         is_active=True,
     )
     db_session.add(other)
@@ -1145,7 +1145,7 @@ async def test_feedback_unread_summary_counts_other_user_entry(client, test_user
         display_name="Unread Author",
         hashed_password=hash_password("pass1234"),
         role="user",
-        native_language="en",
+        native_language="es",
         is_active=True,
     )
     db_session.add(other)
@@ -1223,7 +1223,7 @@ async def test_feedback_unread_summary_counts_other_comment(client, test_user, d
         display_name="Commenter",
         hashed_password=hash_password("pass1234"),
         role="user",
-        native_language="en",
+        native_language="es",
         is_active=True,
     )
     db_session.add(other)
@@ -1280,7 +1280,7 @@ async def test_feedback_unread_summary_counts_done_thread_activity(client, test_
         display_name="Done Unread",
         hashed_password=hash_password("pass1234"),
         role="user",
-        native_language="en",
+        native_language="es",
         is_active=True,
     )
     db_session.add(other)
@@ -1320,7 +1320,7 @@ async def test_mark_feedback_read_clears_only_that_thread(client, test_user, db_
         display_name="Multi Unread",
         hashed_password=hash_password("pass1234"),
         role="user",
-        native_language="en",
+        native_language="es",
         is_active=True,
     )
     db_session.add(other)
@@ -1377,7 +1377,7 @@ async def test_feedback_detail_unread_by_me_clears_after_mark_read(client, test_
         display_name="Detail Unread",
         hashed_password=hash_password("pass1234"),
         role="user",
-        native_language="en",
+        native_language="es",
         is_active=True,
     )
     db_session.add(other)

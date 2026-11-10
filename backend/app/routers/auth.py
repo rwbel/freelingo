@@ -110,8 +110,8 @@ async def register(
     await db.commit()
     await db.refresh(user)
 
-    # Start freemium trial for new users when STRIPE_ENABLED and FREEMIUM_TRIAL_ENABLED
-    if settings.STRIPE_ENABLED and settings.FREEMIUM_TRIAL_ENABLED:
+    # Start freemium trial for new users when FREEMIUM_TRIAL_ENABLED
+    if settings.FREEMIUM_TRIAL_ENABLED:
         from datetime import timedelta
 
         user.freemium_trial_ends_at = datetime.now(UTC).replace(tzinfo=None) + timedelta(

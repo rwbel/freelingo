@@ -19,7 +19,7 @@ async def other_user(db_session):
         display_name="Other User",
         hashed_password=hash_password("otherpass"),
         role="user",
-        native_language="fr",
+        native_language="es",
         is_active=True,
     )
     db_session.add(user)

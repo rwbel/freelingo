@@ -89,9 +89,9 @@ async def revenuecat_webhook(request: Request, db: AsyncSession = Depends(get_db
     return {"received": True}
 
 
-async def _sync(db: AsyncSession, user_id: int, *, import_stripe: bool = False) -> User:
+async def _sync(db: AsyncSession, user_id: int) -> User:
     try:
-        user = await revenuecat_service.sync_user(db, user_id, import_stripe=import_stripe)
+        user = await revenuecat_service.sync_user(db, user_id)
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
         await revenuecat_service.sync_customer_attributes(db, user_id)
@@ -123,7 +123,6 @@ async def sync_subscription(
 async def admin_sync_subscription(
     request: Request,
     user_id: int,
-    body: RevenueCatSyncRequest,
     db: AsyncSession = Depends(get_db),
 ) -> BillingStatusResponse:
-    return _billing_status(await _sync(db, user_id, import_stripe=body.import_stripe))
+    return _billing_status(await _sync(db, user_id))

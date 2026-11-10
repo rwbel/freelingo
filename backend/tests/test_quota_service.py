@@ -740,7 +740,7 @@ class TestGetMonthlyTokensUsed:
             display_name="Other",
             hashed_password=hash_password("pass"),
             role="user",
-            native_language="fr",
+            native_language="es",
             target_language="en-US",
             is_active=True,
         )

@@ -45,7 +45,7 @@ async def test_register_duplicate_username(client):
             "email": "dup2@test.com",
             "password": "Test5678!@",
             "display_name": "Dup2",
-            "native_language": "fr",
+            "native_language": "es",
         },
     )
     assert response.status_code == 409
@@ -82,7 +82,7 @@ async def test_first_user_is_admin(client):
             "email": "first@test.com",
             "password": "Test1234!@",
             "display_name": "First",
-            "native_language": "en",
+            "native_language": "es",
         },
     )
     assert response.status_code == 200
@@ -99,7 +99,7 @@ async def test_second_user_is_not_admin(client):
             "email": "adminfirst@test.com",
             "password": "Test1234!@",
             "display_name": "Admin",
-            "native_language": "en",
+            "native_language": "es",
         },
     )
     response = await client.post(
@@ -182,7 +182,7 @@ async def test_refresh_rotates_token(client):
             "email": "refreshuser@test.com",
             "password": "Test1234!@",
             "display_name": "Refresh",
-            "native_language": "en",
+            "native_language": "es",
         },
     )
     login_resp = await client.post(
@@ -213,7 +213,7 @@ async def test_refresh_replayed_token(client):
             "email": "replayuser@test.com",
             "password": "Test1234!@",
             "display_name": "Replay",
-            "native_language": "en",
+            "native_language": "es",
         },
     )
     login_resp = await client.post(
@@ -239,7 +239,7 @@ async def test_logout(client):
             "email": "logoutuser@test.com",
             "password": "Test1234!@",
             "display_name": "Logout",
-            "native_language": "en",
+            "native_language": "es",
         },
     )
     login_resp = await client.post(
@@ -306,7 +306,7 @@ async def test_patch_me_duplicate_email(client, db_session):
         display_name="B",
         hashed_password=hash_password("pass1234"),
         role="user",
-        native_language="en",
+        native_language="es",
         is_active=True,
     )
     db_session.add(user_a)
@@ -539,7 +539,7 @@ async def test_verify_email_token_consumed_after_use(client, db_session, mock_re
         display_name="Once Token",
         hashed_password=hash_password("pass1234"),
         role="user",
-        native_language="en",
+        native_language="es",
         is_active=True,
         is_verified=False,
     )
@@ -573,7 +573,7 @@ async def test_reset_password_token_consumed_after_use(client, db_session, mock_
         display_name="Once Reset",
         hashed_password=hash_password("oldpass1"),
         role="user",
-        native_language="en",
+        native_language="es",
         is_active=True,
     )
     db_session.add(user)
@@ -611,10 +611,10 @@ async def test_patch_me_ui_locale_valid(client, test_user):
     response = await client.patch(
         "/api/auth/me",
         headers=headers,
-        json={"ui_locale": "fr"},
+        json={"ui_locale": "es"},
     )
     assert response.status_code == 200
-    assert response.json()["ui_locale"] == "fr"
+    assert response.json()["ui_locale"] == "es"
 
 
 @pytest.mark.asyncio
@@ -651,55 +651,51 @@ async def test_patch_me_ui_locale_empty_string_clears(client, test_user):
 
 
 @pytest.mark.asyncio
-async def test_patch_me_accepts_swedish_ui_locale_and_native_language(client, test_user):
+async def test_patch_me_accepts_spanish_ui_locale_and_native_language(client, test_user):
     _, headers = test_user
     response = await client.patch(
         "/api/auth/me",
         headers=headers,
-        json={"ui_locale": "sv", "native_language": "sv"},
+        json={"ui_locale": "es", "native_language": "es"},
     )
     assert response.status_code == 200
-    assert response.json()["ui_locale"] == "sv"
-    assert response.json()["native_language"] == "sv"
+    assert response.json()["ui_locale"] == "es"
+    assert response.json()["native_language"] == "es"
 
 
 @pytest.mark.asyncio
-async def test_patch_me_accepts_danish_ui_locale_and_native_language(client, test_user):
+async def test_patch_me_accepts_asturian_ui_locale_and_native_language(client, test_user):
     _, headers = test_user
     response = await client.patch(
         "/api/auth/me",
         headers=headers,
-        json={"ui_locale": "da", "native_language": "da"},
+        json={"ui_locale": "ast", "native_language": "ast"},
     )
     assert response.status_code == 200
-    assert response.json()["ui_locale"] == "da"
-    assert response.json()["native_language"] == "da"
+    assert response.json()["ui_locale"] == "ast"
+    assert response.json()["native_language"] == "ast"
 
 
 @pytest.mark.asyncio
-async def test_patch_me_accepts_finnish_ui_locale_and_native_language(client, test_user):
+async def test_patch_me_rejects_unsupported_ui_locale(client, test_user):
     _, headers = test_user
     response = await client.patch(
         "/api/auth/me",
         headers=headers,
-        json={"ui_locale": "fi", "native_language": "fi"},
+        json={"ui_locale": "zh"},
     )
-    assert response.status_code == 200
-    assert response.json()["ui_locale"] == "fi"
-    assert response.json()["native_language"] == "fi"
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_patch_me_accepts_croatian_ui_locale_and_native_language(client, test_user):
+async def test_patch_me_rejects_unsupported_native_language(client, test_user):
     _, headers = test_user
     response = await client.patch(
         "/api/auth/me",
         headers=headers,
-        json={"ui_locale": "hr", "native_language": "hr"},
+        json={"native_language": "xx"},
     )
-    assert response.status_code == 200
-    assert response.json()["ui_locale"] == "hr"
-    assert response.json()["native_language"] == "hr"
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio
@@ -855,7 +851,7 @@ async def test_register_when_closed_with_single_use_invite(client, admin_user):
         "username": "invited",
         "email": "invited@test.com",
         "password": "Test1234!@",
-        "native_language": "en",
+        "native_language": "es",
         "invite_token": token,
     }
     with patch.object(settings, "ALLOW_REGISTRATION", False):
@@ -884,7 +880,7 @@ async def test_register_when_closed_with_invalid_invite(client):
                 "username": "uninvited",
                 "email": "uninvited@test.com",
                 "password": "Test1234!@",
-                "native_language": "en",
+                "native_language": "es",
                 "invite_token": "unknown-token",
             },
         )

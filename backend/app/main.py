@@ -167,15 +167,7 @@ app.include_router(languages.router)
 app.include_router(health_router.router)
 app.include_router(vocabulary.router)
 
-if settings.STRIPE_ENABLED:
-    import stripe as _stripe
+if settings.REVENUECAT_ENABLED:
+    from app.routers import revenuecat as revenuecat_router
 
-    from app.routers import billing as billing_router
-
-    _stripe.api_key = settings.STRIPE_SECRET_KEY
-    app.include_router(billing_router.router)
-
-    if settings.REVENUECAT_ENABLED:
-        from app.routers import revenuecat as revenuecat_router
-
-        app.include_router(revenuecat_router.router)
+    app.include_router(revenuecat_router.router)

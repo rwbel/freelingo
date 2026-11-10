@@ -640,7 +640,7 @@ class TestLanguageAPI:
             display_name="Fresh",
             hashed_password=hash_password("testpass"),
             role="user",
-            native_language="fr",
+            native_language="es",
             is_active=True,
         )
         db_session.add(user)

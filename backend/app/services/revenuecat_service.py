@@ -21,21 +21,8 @@ logger = get_logger(__name__)
 
 # A language-based reporting convention, not a customer's verified country.
 _COUNTRY_ESTIMATES = {
-    "en": "GB",
     "es": "ES",
-    "fr": "FR",
-    "pt": "PT",
-    "de": "DE",
-    "it": "IT",
-    "ru": "RU",
-    "nl": "NL",
-    "pl": "PL",
-    "ro": "RO",
-    "tr": "TR",
-    "sv": "SE",
-    "da": "DK",
-    "fi": "FI",
-    "hr": "HR",
+    "ast": "ES",
 }
 
 
@@ -44,7 +31,7 @@ class RevenueCatError(Exception):
 
 
 def revenuecat_enabled() -> bool:
-    return settings.STRIPE_ENABLED and settings.REVENUECAT_ENABLED
+    return settings.REVENUECAT_ENABLED
 
 
 async def sync_customer_attributes(db: AsyncSession, user_id: int) -> None:
@@ -98,10 +85,7 @@ async def _request(
     key = settings.REVENUECAT_API_KEY
     headers = {}
     if import_body is not None:
-        key = settings.REVENUECAT_STRIPE_PUBLIC_API_KEY
-        if not key:
-            raise RevenueCatError("RevenueCat Stripe import key is not configured")
-        headers["X-Platform"] = "stripe"
+        raise RevenueCatError("Stripe import is not supported")
     headers["Authorization"] = f"Bearer {key}"
 
     try:
@@ -179,7 +163,7 @@ def _access_state(info: RevenueCatCustomerInfo) -> tuple[str, datetime | None, b
     return status, ends_at, canceling
 
 
-async def sync_user(db: AsyncSession, user_id: int, *, import_stripe: bool = False) -> User | None:
+async def sync_user(db: AsyncSession, user_id: int) -> User | None:
     """Lock before fetching, then stage the snapshot in the caller's transaction."""
     user = await db.scalar(
         select(User)
@@ -189,17 +173,6 @@ async def sync_user(db: AsyncSession, user_id: int, *, import_stripe: bool = Fal
     )
     if user is None:
         return None
-    if import_stripe:
-        if not user.stripe_subscription_id:
-            raise RevenueCatError("User has no Stripe subscription to import")
-        await _request(
-            "POST",
-            "/receipts",
-            import_body={
-                "app_user_id": str(user.id),
-                "fetch_token": user.stripe_subscription_id,
-            },
-        )
     info = await get_customer_info(user.id)
     try:
         synced_at = datetime.fromtimestamp(info.request_date_ms / 1000, UTC).replace(tzinfo=None)

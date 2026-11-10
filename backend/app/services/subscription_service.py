@@ -1,25 +1,24 @@
 """Shared subscription access and quota helpers.
 
 These functions are the single source of truth for subscription access control.
-When STRIPE_ENABLED=false every user is considered subscribed (self-hosted mode).
+- is_subscribed(): Returns True for users with "trialing" or "active" subscription status.
+  (When RevenueCat is the only billing authority, this reflects RevenueCat sync.)
+- Freemium quotas and trials apply to all users.
+  Subscribed users bypass all freemium quotas.
 """
 
 from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.models.user import User
 
 
-def is_subscribed(user: User, stripe_enabled: bool) -> bool:
+def is_subscribed(user: User) -> bool:
     """Return True if the user has full access to AI features.
 
-    - stripe_enabled=False  → always True (self-hosted / no paywall)
-    - stripe_enabled=True   → only "trialing" or "active" subscriptions pass
+    Only "trialing" or "active" subscription status passes.
     """
-    if not stripe_enabled:
-        return True
     # Renewal notifications can lag behind the cached period end. Only a verified
     # synchronization changes access; the local clock must not revoke it.
     return user.subscription_status in ("trialing", "active")

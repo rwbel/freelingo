@@ -112,7 +112,7 @@ def test_system_prompt_includes_user_context() -> None:
     prompt = _build_conversation_system_prompt(
         student_name="Bob",
         cefr_level="B2",
-        native_language="fr",
+        native_language="es",
         target_language_name="Spanish",
         user_context="\nStudent context:\n- Learning goals: grammar, vocab\n",
         memory_context="",
@@ -124,7 +124,7 @@ def test_system_prompt_includes_memory_context() -> None:
     prompt = _build_conversation_system_prompt(
         student_name="Bob",
         cefr_level="B2",
-        native_language="fr",
+        native_language="es",
         target_language_name="Spanish",
         user_context="",
         memory_context="\nMemories:\n- Alice likes cats\n",
@@ -136,7 +136,7 @@ def test_system_prompt_includes_memory_system_instruction() -> None:
     prompt = _build_conversation_system_prompt(
         student_name="C",
         cefr_level="C1",
-        native_language="de",
+        native_language="es",
         target_language_name="Italian",
         user_context="",
         memory_context="",

@@ -47,65 +47,36 @@ class TestCleanGeneratedWord:
 
 
 class TestGetLangHint:
-    def test_known_language_de(self):
-        from app.services.flashcard_sm2 import _get_lang_hint
-
-        hint = _get_lang_hint("de")
-        assert "standard german spelling" in hint.lower()
-
-    def test_known_language_fr(self):
-        from app.services.flashcard_sm2 import _get_lang_hint
-
-        hint = _get_lang_hint("fr")
-        assert "french" in hint.lower()
-
     def test_known_language_es(self):
+        from app.services.flashcard_sm2 import _get_lang_hint
+
+        hint = _get_lang_hint("es-ES")
+        assert "spanish" in hint.lower()
+
+    def test_known_language_ast(self):
+        from app.services.flashcard_sm2 import _get_lang_hint
+
+        hint = _get_lang_hint("ast-ES")
+        assert "asturian" in hint.lower()
+
+    def test_iso_fallback_es(self):
         from app.services.flashcard_sm2 import _get_lang_hint
 
         hint = _get_lang_hint("es")
         assert "spanish" in hint.lower()
 
-    def test_known_language_it(self):
+    def test_iso_fallback_ast(self):
         from app.services.flashcard_sm2 import _get_lang_hint
 
-        hint = _get_lang_hint("it")
-        assert "italian" in hint.lower()
-
-    def test_known_language_pt(self):
-        from app.services.flashcard_sm2 import _get_lang_hint
-
-        hint = _get_lang_hint("pt")
-        assert "portuguese" in hint.lower()
-
-    def test_known_language_en_us(self):
-        from app.services.flashcard_sm2 import _get_lang_hint
-
-        hint = _get_lang_hint("en-US")
-        assert "american english" in hint.lower()
-
-    def test_known_language_en_gb(self):
-        from app.services.flashcard_sm2 import _get_lang_hint
-
-        hint = _get_lang_hint("en-GB")
-        assert "british english" in hint.lower()
-
-    def test_iso_fallback_de_de(self):
-        from app.services.flashcard_sm2 import _get_lang_hint
-
-        hint = _get_lang_hint("de-DE")
-        assert "standard german spelling" in hint.lower()
-
-    def test_iso_fallback_fr_fr(self):
-        from app.services.flashcard_sm2 import _get_lang_hint
-
-        hint = _get_lang_hint("fr-FR")
-        assert "french" in hint.lower()
+        hint = _get_lang_hint("ast")
+        assert "asturian" in hint.lower()
 
     def test_unknown_language_returns_empty(self):
         from app.services.flashcard_sm2 import _get_lang_hint
 
         assert _get_lang_hint("xx") == ""
         assert _get_lang_hint("") == ""
+
 
 
 class TestGenerateFlashcards:

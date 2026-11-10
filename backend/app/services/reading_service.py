@@ -64,35 +64,17 @@ _TOPICS_BY_LEVEL: dict[str, list[str]] = {
 }
 
 _CULTURAL_TOPICS: dict[str, list[str]] = {
-    "sv": [
-        "daily life, public transport, libraries, housing and local services in Sweden",
-        "Swedish literature, music, cinema, design and regional cultural life",
-        "Swedish outdoor life, allemansrätten with responsibilities and local restrictions",
-        "associations, seasonal traditions, linguistic diversity and Sámi perspectives in Sweden",
+    "es-ES": [
+        "Spanish festivals and local traditions",
+        "Spanish art, architecture, and flamenco",
+        "daily life and customs in Spanish cities",
+        "culture and diversity of Spanish-speaking countries",
     ],
-    "ru": [
-        "daily life, public transport, local services and leisure in Russian cities and regions",
-        "Russian literature, theatre, cinema, music and contemporary cultural life",
-        "regional food, seasonal traditions and cultural diversity in Russia",
-        "Russian-language communication, science, museums and differing historical perspectives",
-    ],
-    "nl": [
-        "daily life, cycling, public transport and local services in the Netherlands",
-        "Dutch water management, polders and contemporary environmental debates",
-        "Dutch literature, art, museums and regional cultural life in the Netherlands",
-        "cultural diversity, historical perspectives and changing traditions in the Netherlands",
-    ],
-    "de": [
-        "German festivals and holiday traditions",
-        "German classical music and famous composers",
-        "daily life and customs in German cities",
-        "German history and famous landmarks",
-    ],
-    "fr": [
-        "French cuisine and regional food culture",
-        "French art, cinema, and cultural life",
-        "daily life and customs in French cities",
-        "French history, monuments, and heritage",
+    "ast-ES": [
+        "Asturian festivals and local traditions",
+        "Asturian literature, music, and cultural heritage",
+        "daily life and customs in Asturian towns",
+        "culture and diversity of Asturias",
     ],
     "es": [
         "Spanish festivals and local traditions",
@@ -100,59 +82,11 @@ _CULTURAL_TOPICS: dict[str, list[str]] = {
         "daily life and customs in Spanish cities",
         "culture and diversity of Spanish-speaking countries",
     ],
-    "it": [
-        "Italian regional cuisine and food traditions",
-        "Italian Renaissance art and cultural heritage",
-        "daily life and customs in Italian cities",
-        "Italian history, landmarks, and UNESCO sites",
-    ],
-    "es-ES": [
-        "Brazilian regional food, festivals, and everyday traditions",
-        "Brazilian literature, music, cinema, and cultural diversity",
-        "daily life, education, work, and public transport in Brazilian cities",
-        "Brazilian history, Indigenous and Afro-Brazilian heritage, and biodiversity",
-    ],
-    "pt": [
-        "Portuguese music, fado, and cultural traditions",
-        "Portuguese cuisine, wines, and food customs",
-        "daily life and customs in Portuguese cities",
-        "Portuguese history, the Age of Discoveries, and heritage",
-    ],
-    "pl": [
-        "Polish traditions, festivals, and seasonal customs",
-        "Polish cuisine, regional food culture, and hospitality",
-        "daily life and customs in Polish cities",
-        "Polish history, literature, and cultural heritage",
-    ],
-    "ja": [
-        "daily life, etiquette, and seasonal customs in Japan",
-        "Japanese food culture, festivals, and regional traditions",
-        "Japanese cities, transport, schools, and workplace routines",
-        "Japanese literature, media, history, and cultural heritage",
-    ],
-    "ko": [
-        "daily life, etiquette, and social customs in South Korea",
-        "Korean food culture, festivals, music, and contemporary media",
-        "South Korean cities, transport, education, and workplace routines",
-        "Korean history, language culture, and cultural heritage",
-    ],
-    "zh": [
-        "daily life, etiquette, and social customs in Mainland China",
-        "Chinese food culture, festivals, family traditions, and regional customs",
-        "Mainland Chinese cities, transport, education, and workplace routines",
-        "Chinese history, literature, arts, and cultural heritage",
-    ],
-    "es-ES": [
-        "British traditions, monarchy, and cultural life",
-        "daily life and customs in UK cities and countryside",
-        "British literature, theatre, and the arts",
-        "UK history, landmarks, and heritage",
-    ],
-    "es-ES": [
-        "American traditions, holidays, and cultural life",
-        "daily life and customs in US cities and regions",
-        "American literature, cinema, and popular culture",
-        "US history, landmarks, and national parks",
+    "ast": [
+        "Asturian festivals and local traditions",
+        "Asturian literature, music, and cultural heritage",
+        "daily life and customs in Asturian towns",
+        "culture and diversity of Asturias",
     ],
 }
 
@@ -198,179 +132,110 @@ async def generate_and_save_exercise(
     deadline: float | None = None,
     before_save: Callable[[], Awaitable[None]] | None = None,
 ) -> ReadingExercise:
-    """
-    Generate exercise text via LLM and persist.
-
-    Raises ValueError on LLM JSON failure after 2 attempts.
-    """
-    exercise_type = random.choice(_TYPES_BY_LEVEL.get(level, ["article"]))
-    generic_topics = _TOPICS_BY_LEVEL.get(level, ["daily_routine"])
-    cultural_topics = _get_cultural_topics(target_language)
-    topic_area = random.choice(generic_topics + cultural_topics)
+    if target_language not in _WORD_COUNT_BY_LEVEL:
+        target_language = "es-ES"
     word_count = _WORD_COUNT_BY_LEVEL.get(level, 200)
 
+    type_pool = _TYPES_BY_LEVEL.get(level, ["notice", "email"])
+    exercise_type = random.choice(type_pool)
+    topic_pool = _TOPICS_BY_LEVEL.get(level, ["daily_routine"])
+    topic = random.choice(topic_pool)
+
+    cultural_topics = _get_cultural_topics(target_language)
+    cultural_context = random.choice(cultural_topics) if cultural_topics else ""
+
     prompt = build_reading_generation_prompt(
-        level=level,
-        target_language_name=get_language_name(target_language),
         exercise_type=exercise_type,
-        exercise_type_desc=_TYPE_DESCRIPTIONS[exercise_type],
-        topic=topic_area,
+        level=level,
+        target_language=target_language,
+        topic=topic,
         word_count=word_count,
-        length_guidance=get_comprehension_length_guidance(target_language, word_count),
+        cultural_context=cultural_context,
         language_prompt_overlay=get_language_prompt_overlay(target_language),
     )
-    messages = [{"role": "user", "content": prompt}]
 
-    try:
-        parsed = await llm_adapter.structured_output(
-            messages, ReadingGenerationResponse, deadline=deadline
-        )
-    except LLMResponseError as exc:
-        raise ValueError(f"LLM failed to produce valid reading exercise JSON: {exc}") from exc
-
-    topic = parsed.topic
-    text = parsed.text
-    questions = [question.model_dump() for question in parsed.questions]
+    response = await llm_adapter.structured_output(
+        [{"role": "system", "content": prompt}],
+        ReadingGenerationResponse,
+        timeout=60.0,
+        max_retries=2,
+    )
 
     exercise = ReadingExercise(
         level=level,
         target_language=target_language,
         exercise_type=exercise_type,
         topic=topic,
-        text=text,
-        questions=questions,
+        passage=response.passage,
+        questions=[q.model_dump() for q in response.questions],
+        word_count=word_count,
     )
-    db.add(exercise)
-    if before_save is not None:
+
+    if before_save:
         await before_save()
+
+    db.add(exercise)
     await db.commit()
     await db.refresh(exercise)
     return exercise
 
 
-def calculate_score(
-    questions: list[dict[str, Any]],
-    answers: dict[str, str],
-) -> tuple[int, int]:
-    """Return (score 0–5, xp_earned). Pure function — no DB access."""
-    score = sum(
-        1 for q in questions if answers.get(str(q["index"]), "").upper() == q["correct"].upper()
-    )
-    return score, score * XP_PER_CORRECT_ANSWER
-
-
-async def submit_attempt(
+async def grade_exercise(
     exercise_id: int,
-    user_id: int,
-    answers: dict[str, str],
+    answers: list[str],
     db: AsyncSession,
-    is_replay: bool = False,
-    study_plan_id: int | None = None,
-) -> tuple[ReadingAttempt, ReadingExercise]:
-    """
-    Score answers, persist attempt, increment view_count, award XP.
-    Returns (attempt, exercise).
-    Raises ValueError("exercise_not_found") if exercise_id is invalid.
-    Raises ValueError("already_attempted") if user already submitted for this exercise
-    and is_replay is False.
-    Replays credit 5 XP once per UTC day when a prior-day attempt exists in this plan.
-    """
-    completed_at = datetime.now(UTC).replace(tzinfo=None)
-    activity_date = completed_at.date()
+) -> tuple[bool, list[bool], int]:
     exercise = await db.get(ReadingExercise, exercise_id)
     if exercise is None:
-        raise ValueError("exercise_not_found")
+        raise ValueError("Exercise not found")
 
-    if study_plan_id is not None:
-        await lock_progress_plan(db, user_id, study_plan_id)
-    if not is_replay:
-        # Guard against duplicate submissions on first attempt
-        existing = await db.execute(
-            select(ReadingAttempt).where(
-                ReadingAttempt.user_id == user_id,
-                ReadingAttempt.exercise_id == exercise_id,
-            )
-        )
-        if existing.scalar_one_or_none() is not None:
-            raise ValueError("already_attempted")
+    correct_count = 0
+    results = []
+    questions = exercise.questions
 
-    score, xp_earned = calculate_score(exercise.questions, answers)
-    if is_replay:
-        xp_earned = 0
-        earlier_attempt = await db.scalar(
-            select(ReadingAttempt.id)
-            .where(
-                ReadingAttempt.user_id == user_id,
-                ReadingAttempt.study_plan_id == study_plan_id,
-                ReadingAttempt.exercise_id == exercise_id,
-                ReadingAttempt.completed_at < datetime.combine(activity_date, time.min),
-            )
-            .limit(1)
-        )
-        if earlier_attempt is not None and study_plan_id is not None:
-            xp_earned = await award_progress_reward(
-                db,
-                user_id,
-                study_plan_id,
-                kind="reading_replay",
-                source_key=f"{exercise_id}:{activity_date}",
-                xp=5,
-                activity_date=activity_date,
-            )
+    for i, (question, answer) in enumerate(zip(questions, answers)):
+        expected = question.get("answer", "").strip().lower()
+        given = answer.strip().lower()
+        is_correct = expected == given
+        results.append(is_correct)
+        if is_correct:
+            correct_count += 1
+
+    passed = correct_count >= len(questions) * 0.6
+    return passed, results, correct_count
+
+
+async def process_exercise_attempt(
+    user_id: int,
+    exercise_id: int,
+    answers: list[str],
+    db: AsyncSession,
+) -> dict[str, Any]:
+    passed, results, correct_count = await grade_exercise(exercise_id, answers, db)
+
+    xp_earned = correct_count * XP_PER_CORRECT_ANSWER
+    if passed:
+        xp_earned += 10
 
     attempt = ReadingAttempt(
         user_id=user_id,
         exercise_id=exercise_id,
-        study_plan_id=study_plan_id,
         answers=answers,
-        score=score,
+        passed=passed,
         xp_earned=xp_earned,
-        completed_at=completed_at,
     )
     db.add(attempt)
 
-    exercise.view_count += 1
+    await update_daily_progress(user_id, xp_earned, db)
+    await award_progress_reward(user_id, xp_earned, db)
+    await lock_progress_plan(user_id, db)
 
-    await update_daily_progress(
-        db,
-        user_id,
-        xp=0 if is_replay else xp_earned,
-        study_plan_id=study_plan_id,
-        activity_date=activity_date,
-        commit=False,
-    )
     await db.commit()
-    await db.refresh(attempt)
 
-    return attempt, exercise
-
-
-async def get_user_history(
-    user_id: int,
-    db: AsyncSession,
-    skip: int = 0,
-    limit: int = 10,
-    *,
-    target_language: str | None = None,
-) -> tuple[list[tuple[ReadingAttempt, ReadingExercise]], int]:
-    """Return (rows, total) for paginated attempt history, newest first."""
-    base_where = [ReadingAttempt.user_id == user_id]
-    if target_language is not None:
-        base_where.append(ReadingExercise.target_language == target_language)
-
-    total_result = await db.execute(
-        select(func.count(ReadingAttempt.id))
-        .join(ReadingExercise, ReadingAttempt.exercise_id == ReadingExercise.id)
-        .where(*base_where)
-    )
-    total: int = total_result.scalar_one()
-
-    rows_result = await db.execute(
-        select(ReadingAttempt, ReadingExercise)
-        .join(ReadingExercise, ReadingAttempt.exercise_id == ReadingExercise.id)
-        .where(*base_where)
-        .order_by(ReadingAttempt.completed_at.desc())
-        .offset(skip)
-        .limit(limit)
-    )
-    return list(rows_result.all()), total
+    return {
+        "passed": passed,
+        "results": results,
+        "correct_count": correct_count,
+        "total_questions": len(answers),
+        "xp_earned": xp_earned,
+    }

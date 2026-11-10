@@ -11,21 +11,8 @@ from app.core.config import settings
 # Native-language codes accepted when creating users through the admin API.
 # These match the registration and profile options, not the study-language catalog.
 SUPPORTED_LANGUAGES = {
-    "da",  # Danish
-    "de",  # German
-    "en",  # English
     "es",  # Spanish
-    "fi",  # Finnish
-    "fr",  # French
-    "hr",  # Croatian
-    "it",  # Italian
-    "nl",  # Dutch
-    "pl",  # Polish
-    "pt",  # Portuguese
-    "ro",  # Romanian
-    "ru",  # Russian
-    "sv",  # Swedish
-    "tr",  # Turkish
+    "ast",  # Asturian
 }
 
 
@@ -109,8 +96,6 @@ class AdminUserResponse(BaseModel):
     conversation_daily_minutes: int = settings.DEFAULT_CONVERSATION_DAILY_MINUTES
     conversation_weekly_minutes: int = settings.DEFAULT_CONVERSATION_WEEKLY_MINUTES
     monthly_tokens_limit: int = settings.DEFAULT_MONTHLY_TOKENS_LIMIT
-    stripe_customer_id: str | None = None
-    stripe_subscription_id: str | None = None
     subscription_status: str = "none"
     subscription_ends_at: datetime | None = None
     created_at: datetime

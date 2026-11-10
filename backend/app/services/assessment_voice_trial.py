@@ -25,18 +25,15 @@ class AssessmentVoiceTrial:
     duration_seconds: int = TRIAL_DURATION_SECONDS
 
 
-def is_assessment_voice_trial_available(user: User, stripe_enabled: bool) -> bool:
-    return not is_subscribed(user, stripe_enabled) and not user.assessment_voice_trial_used
+def is_assessment_voice_trial_available(user: User) -> bool:
+    return not is_subscribed(user) and not user.assessment_voice_trial_used
 
 
 def is_assessment_voice_trial_available_for_values(
     *,
     subscription_status: str,
     assessment_voice_trial_used: bool,
-    stripe_enabled: bool,
 ) -> bool:
-    if not stripe_enabled:
-        return False
     return subscription_status not in ("trialing", "active") and not assessment_voice_trial_used
 
 
@@ -50,7 +47,6 @@ async def create_assessment_voice_trial_token(
     user_id: int,
     subscription_status: str,
     assessment_voice_trial_used: bool,
-    stripe_enabled: bool,
     plan_id: int,
     target_language: str,
     cefr_level: str,
@@ -58,7 +54,6 @@ async def create_assessment_voice_trial_token(
     if not is_assessment_voice_trial_available_for_values(
         subscription_status=subscription_status,
         assessment_voice_trial_used=assessment_voice_trial_used,
-        stripe_enabled=stripe_enabled,
     ):
         return {"available": False}
 
@@ -88,9 +83,8 @@ async def validate_assessment_voice_trial_token(
     *,
     user: User,
     token: str | None,
-    stripe_enabled: bool,
 ) -> AssessmentVoiceTrial | None:
-    if not token or not is_assessment_voice_trial_available(user, stripe_enabled):
+    if not token or not is_assessment_voice_trial_available(user):
         return None
 
     raw = await redis.get(_token_key(user.id, token))

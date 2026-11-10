@@ -65,10 +65,9 @@ async def require_subscription(
 ) -> User:
     """Dependency for endpoints gated by subscription.
 
-    Returns the user unchanged when STRIPE_ENABLED=false (self-hosted mode).
-    Raises HTTP 402 when STRIPE_ENABLED=true and user has no active subscription.
+    Raises HTTP 402 when user has no active subscription.
     """
-    if not is_subscribed(current_user, settings.STRIPE_ENABLED):
+    if not is_subscribed(current_user):
         raise HTTPException(status_code=402, detail="subscription_required")
     return current_user
 
@@ -77,10 +76,7 @@ async def check_subscription_or_freemium_access(
     feature: str, redis: Redis, current_user: User
 ) -> None:
     """Raise unless the user has subscription, trial, or remaining feature quota."""
-    if not settings.STRIPE_ENABLED:
-        return
-
-    if is_subscribed(current_user, settings.STRIPE_ENABLED):
+    if is_subscribed(current_user):
         return
 
     from app.services.freemium_service import is_freemium_trial_active
@@ -137,8 +133,7 @@ async def check_subscription_or_freemium_access(
 def require_subscription_or_freemium(feature: str):
     """Factory that returns a FastAPI dependency checking subscription OR freemium quota.
 
-    When STRIPE_ENABLED=false the user always passes (self-hosted mode).
-    When STRIPE_ENABLED=true the check follows this order:
+    The check follows this order for all users:
       1. Subscribed (trialing/active) → allowed
       2. Freemium trial active → allowed
       3. Freemium quota available for *feature* → allowed
@@ -173,10 +168,7 @@ def require_subscription_or_freemium_readonly(feature: str):
         redis: Redis = Depends(get_redis),
         current_user: User = Depends(get_current_user),
     ) -> User:
-        if not settings.STRIPE_ENABLED:
-            return current_user
-
-        if is_subscribed(current_user, settings.STRIPE_ENABLED):
+        if is_subscribed(current_user):
             return current_user
 
         from app.services.freemium_service import is_freemium_trial_active

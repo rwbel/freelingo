@@ -1,6 +1,6 @@
 """Freemium quota and trial helpers backed by Redis.
 
-When STRIPE_ENABLED=true and a user is not subscribed:
+For all users:
 - Quota counters in Redis with TTL-based auto-reset:
   - freemium:chat:{user_id}:{YYYY-MM-DD}       → daily chat messages (midnight reset)
   - freemium:lessons:{user_id}:{YYYY-MM-DD}     → daily lessons (midnight reset)
@@ -12,6 +12,8 @@ When STRIPE_ENABLED=true and a user is not subscribed:
 
 A user with an active freemium trial (freemium_trial_ends_at in the future)
 gets unlimited access — no quota checks apply.
+
+Subscribed users (trialing/active) bypass all quotas.
 """
 
 from __future__ import annotations
@@ -85,8 +87,6 @@ def is_freemium_trial_active(freemium_trial_ends_at: datetime | None) -> bool:
     strips tzinfo from datetime.now(UTC) to keep both operands timezone-naive,
     which produces the correct result as long as both sides represent UTC.
     """
-    if not settings.STRIPE_ENABLED:
-        return False
     if not settings.FREEMIUM_TRIAL_ENABLED:
         return False
     if freemium_trial_ends_at is None:
@@ -205,14 +205,12 @@ async def record_voice_usage(redis: Redis, user_id: int, seconds: int) -> int:
 async def maybe_record_freemium_usage(user, feature: str) -> None:
     """Record freemium usage for *feature* if the user is not subscribed and not in trial.
 
-    No-op when STRIPE_ENABLED=false, the user is subscribed, or the trial is active.
+    No-op when the user is subscribed, or the trial is active.
     Best-effort: Redis failures are silently ignored so recording never blocks the caller.
     """
     from app.services.subscription_service import is_subscribed  # noqa: PLC0415
 
-    if not settings.STRIPE_ENABLED:
-        return
-    if is_subscribed(user, settings.STRIPE_ENABLED):
+    if is_subscribed(user):
         return
     if is_freemium_trial_active(user.freemium_trial_ends_at):
         return

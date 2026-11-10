@@ -67,7 +67,7 @@ async def _check_voice_access(
 
     Check order: subscribed → freemium trial → freemium voice quota → assessment trial.
     """
-    if is_subscribed(user, settings.STRIPE_ENABLED):
+    if is_subscribed(user):
         return True, False, None, 0
 
     if is_freemium_trial_active(user.freemium_trial_ends_at):
@@ -85,7 +85,6 @@ async def _check_voice_access(
             redis_client,
             user=user,
             token=voice_trial_token,
-            stripe_enabled=settings.STRIPE_ENABLED,
         )
         if trial:
             return True, False, trial, 0
@@ -186,7 +185,7 @@ async def _warmup_stt(stt_service: object) -> None:
             wav,
             "warmup.wav",
             "audio/wav",
-            language="en",
+            language="es",
         )
         logger.info("[warmup] STT ready")
     except Exception as exc:

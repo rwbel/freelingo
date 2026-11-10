@@ -35,7 +35,7 @@ async def contact(
             sender_email=data.email,
             subject=data.subject,
             description=data.description,
-            locale=admin_locale or "en",
+            locale=admin_locale or "es",
         )
     except Exception as exc:
         raise HTTPException(

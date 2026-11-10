@@ -573,7 +573,7 @@ async def test_catalog_requires_plan_and_native_language_is_profile_owned(
             "request_id": str(uuid4()),
             "study_plan_id": plan.id,
             "mode": "free",
-            "native_language": "de",
+            "native_language": "es",
         },
     )
     assert started.status_code == 202

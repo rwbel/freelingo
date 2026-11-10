@@ -43,31 +43,10 @@ async def test_other_models_keep_the_original_request(service, model):
 @pytest.mark.parametrize(
     ("language", "expected"),
     [
-        ("en-GB", "British English"),
-        ("en-US", "American English"),
-        ("es", "Spanish from Spain"),
         ("es-ES", "Spanish from Spain"),
-        ("pt-BR", "Brazilian Portuguese from Brazil"),
-        ("pt-PT", "European Portuguese from Portugal"),
-        ("fr", "French from France"),
-        ("de-DE", "Standard German from Germany"),
-        ("it-IT", "Standard Italian from Italy"),
-        ("pl-PL", "Polish from Poland"),
-        ("ja-JP", "Standard Japanese from Japan"),
-        ("ko-KR", "Standard Korean from South Korea"),
-        ("zh-CN", "Standard Mandarin Chinese from Mainland China"),
-        ("pl", "Polish from Poland"),
-        ("nl", "Dutch from the Netherlands"),
-        ("nl-NL", "Dutch from the Netherlands"),
-        ("ro", "Romanian from Romania"),
-        ("ru", "Russian from Russia"),
-        ("ru-RU", "Russian from Russia"),
-        ("tr", "Turkish from Turkey"),
-        ("sv", "Swedish from Sweden"),
-        ("sv-SE", "Swedish from Sweden"),
-        ("da", "Danish from Denmark"),
-        ("fi", "Finnish from Finland"),
-        ("hr", "Croatian from Croatia"),
+        ("es", "Spanish from Spain"),
+        ("ast-ES", "Asturian from Spain"),
+        ("ast", "Asturian from Spain"),
     ],
 )
 async def test_capable_models_receive_the_requested_language(service, model, language, expected):
@@ -91,16 +70,16 @@ async def test_generic_tts_also_receives_multilingual_instructions(service):
 
 
 def test_cache_key_changes_with_instructions_only_for_capable_models(service, monkeypatch):
-    modern = service.get_cache_key("Bonjour.", language="fr")
+    modern = service.get_cache_key("Hola.", language="es-ES")
     service.model = "tts-1"
-    legacy = service.get_cache_key("Bonjour.", language="fr")
+    legacy = service.get_cache_key("Hola.", language="es-ES")
     monkeypatch.setattr(
         "app.services.tts_service.build_speech_instructions",
         lambda language: "Revised pronunciation",
     )
-    assert service.get_cache_key("Bonjour.", language="fr") == legacy
+    assert service.get_cache_key("Hola.", language="es-ES") == legacy
     service.model = "gpt-4o-mini-tts"
-    assert service.get_cache_key("Bonjour.", language="fr") != modern
+    assert service.get_cache_key("Hola.", language="es-ES") != modern
 
 
 @pytest.mark.parametrize("model", ["tts-1", "gpt-4o-mini-tts"])

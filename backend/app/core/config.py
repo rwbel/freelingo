@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     DEFAULT_MONTHLY_TOKENS_LIMIT: int = 1_000_000
     ASSESSMENT_VOICE_TRIAL_DURATION_SECONDS: int = 300
 
-    # Freemium quotas for unsubscribed users when STRIPE_ENABLED=true.
+    # Freemium quotas for unsubscribed users (applies regardless of Stripe).
     # A quota value of 0 means the feature is entirely blocked for free users.
     FREEMIUM_CHAT_DAILY_MESSAGES: int = 5
     FREEMIUM_LESSONS_DAILY: int = 3
@@ -61,25 +61,15 @@ class Settings(BaseSettings):
     FREEMIUM_TRIAL_ENABLED: bool = True
     FREEMIUM_TRIAL_DAYS: int = 7
 
-    # Stripe (for paid plans and billing management)
-    STRIPE_ENABLED: bool = False
-    STRIPE_SECRET_KEY: str = ""
-    STRIPE_WEBHOOK_SECRET: str = ""
-    STRIPE_PRICE_MONTHLY: str = ""
-    STRIPE_PRICE_YEARLY: str = ""
-    STRIPE_TRIAL_DAYS: int = 7
-    STRIPE_BASE_URL: str = "http://localhost:3000"
-
-    # Optional authority for Premium entitlements; Stripe still owns web checkout.
+    # Optional authority for Premium entitlements
     REVENUECAT_ENABLED: bool = False
     REVENUECAT_API_KEY: str = ""
     REVENUECAT_WEBHOOK_AUTHORIZATION: str = ""
     REVENUECAT_ENTITLEMENT_ID: str = "premium"
     REVENUECAT_ENVIRONMENT: Literal["PRODUCTION", "SANDBOX"] = "PRODUCTION"
-    REVENUECAT_STRIPE_PUBLIC_API_KEY: str = ""
 
     def validate_revenuecat(self) -> None:
-        if not (self.STRIPE_ENABLED and self.REVENUECAT_ENABLED):
+        if not self.REVENUECAT_ENABLED:
             return
         required = (
             "REVENUECAT_API_KEY",

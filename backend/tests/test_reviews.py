@@ -360,7 +360,7 @@ async def test_public_review_summary_includes_all_approved_ratings_beyond_carous
             username=f"reviewer{index}",
             display_name=f"Reviewer {index}",
             hashed_password="unused",
-            native_language="en",
+            native_language="es",
             target_language="en-GB",
         )
         db_session.add(user)

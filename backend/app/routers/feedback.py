@@ -410,7 +410,7 @@ async def create_feedback(
             description=entry.description,
             author_username=current_user.username,
             entry_id=entry.id,
-            locale=admin_locale or "en",
+            locale=admin_locale or "es",
         )
     )
     return await _build_entry_out(entry, current_user, db)

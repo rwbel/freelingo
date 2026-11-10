@@ -8,21 +8,8 @@ from app.main import app
 from app.services.stt_service import OpenAISTTService, WhisperSTTService
 
 LANGUAGE_CASES = [
-    ("en-US", "en"),
-    ("en-GB", "en"),
-    ("de-DE", "de"),
     ("es-ES", "es"),
-    ("fr-FR", "fr"),
-    ("it-IT", "it"),
-    ("pl-PL", "pl"),
-    ("nl-NL", "nl"),
-    ("ru-RU", "ru"),
-    ("sv-SE", "sv"),
-    ("ja-JP", "ja"),
-    ("ko-KR", "ko"),
-    ("pt-BR", "pt"),
-    ("pt-PT", "pt"),
-    ("zh-CN", "zh"),
+    ("ast-ES", "ast"),
 ]
 
 
@@ -140,7 +127,7 @@ async def test_stt_rejects_study_plan_owned_by_another_user(
 ) -> None:
     _, headers = test_user
     other_user, _ = admin_user
-    other_plan = await _make_plan(db_session, other_user.id, "it-IT")
+    other_plan = await _make_plan(db_session, other_user.id, "es-ES")
 
     response = await client.post(
         "/api/stt",
@@ -172,13 +159,13 @@ async def test_openai_stt_forwards_required_language(monkeypatch) -> None:
         b"wav-bytes",
         "recording.wav",
         "audio/wav",
-        language="it",
+        language="es",
     )
 
     assert text == "Credo che abbiano poco tempo."
     kwargs = create.await_args.kwargs
     assert kwargs["model"] == "whisper-1"
-    assert kwargs["language"] == "it"
+    assert kwargs["language"] == "es"
     assert kwargs["timeout"] == 60.0
     filename, audio_file, mime_type = kwargs["file"]
     assert filename == "recording.wav"
@@ -219,13 +206,13 @@ async def test_local_stt_forwards_required_language(monkeypatch) -> None:
         b"wav-bytes",
         "recording.wav",
         "audio/wav",
-        language="de",
+        language="es",
     )
 
     assert text == "Ich spreche Deutsch."
     post.assert_awaited_once_with(
         "http://whisper:9000/asr",
-        params={"output": "json", "language": "de", "task": "transcribe"},
+        params={"output": "json", "language": "es", "task": "transcribe"},
         files={"audio_file": ("recording.wav", b"wav-bytes", "audio/wav")},
         timeout=60.0,
     )

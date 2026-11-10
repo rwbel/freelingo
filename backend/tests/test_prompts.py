@@ -90,17 +90,9 @@ def test_conversation_prompt_wrapper_matches_central_builder() -> None:
 
 def test_regional_language_names_and_hints_are_prompt_ready() -> None:
     assert get_language_name("es-ES") == "Spanish (Spain)"
-    assert get_language_name("pt-PT") == "European Portuguese"
-    assert get_language_name("ja-JP") == "Japanese"
-    assert get_language_name("ko-KR") == "Korean (South Korea)"
-    assert get_language_name("pl-PL") == "Polish"
-    assert get_language_name("nl-NL") == "Dutch (Netherlands)"
-    assert get_language_name("zh-CN") == "Chinese (Mainland China)"
+    assert get_language_name("ast-ES") == "Asturian (Spain)"
     assert _get_lang_hint("es-ES") == get_language_prompt_overlay("es-ES")
-    assert _get_lang_hint("pl-PL") == get_language_prompt_overlay("pl-PL")
-    assert _get_lang_hint("nl-NL") == get_language_prompt_overlay("nl-NL")
-    assert _get_lang_hint("ru-RU") == get_language_prompt_overlay("ru-RU")
-    assert _get_lang_hint("pt-PT") == get_language_prompt_overlay("pt-PT")
+    assert _get_lang_hint("ast-ES") == get_language_prompt_overlay("ast-ES")
 
 
 def test_cjk_language_metadata_is_prompt_ready() -> None:
@@ -123,32 +115,11 @@ def test_cjk_language_metadata_is_prompt_ready() -> None:
     assert get_comprehension_length_guidance("ko-KR", 120) == "120 words"
 
 
-def test_polish_language_metadata_is_prompt_ready() -> None:
-    assert get_iso639("pl-PL") == "pl"
-    assert get_language_script("pl-PL") == "latin"
-    assert get_language_romanization("pl-PL") == ""
-    assert uses_word_spacing("pl-PL") is True
-    assert get_reading_length_unit("pl-PL") == "words"
-    assert get_comprehension_length_guidance("pl-PL", 120) == "120 words"
-    assert get_language_flag("pl-PL") == "🇵🇱"
-    assert get_language_self_name("pl-PL") == "Polski"
-    assert get_language_prompt_overlay("pl") == get_language_prompt_overlay("pl-PL")
-
-
-@pytest.mark.parametrize("language", ["pl", "pl-PL"])
-def test_polish_reading_cultural_topics_do_not_fall_back_to_english(language: str) -> None:
-    from app.services.reading_service import _get_cultural_topics
-
-    topics = _get_cultural_topics(language)
-
-    assert topics
-    assert all("Polish" in topic for topic in topics)
-    assert topics != _get_cultural_topics("en-GB")
 
 
 def test_native_language_names_are_prompt_ready() -> None:
     assert get_native_language_name("es") == "Spanish"
-    assert get_native_language_name("fr") == "French"
+    assert get_native_language_name("ast") == "Asturian"
     assert get_native_language_name("unknown") == "unknown"
 
 

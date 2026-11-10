@@ -300,7 +300,7 @@ async def admin_user(db_session):
         display_name="Admin",
         hashed_password=hash_password("adminpass"),
         role="admin",
-        native_language="en",
+        native_language="es",
         target_language="en-US",
         is_active=True,
     )

@@ -348,7 +348,7 @@ async def test_clear_all_memories_service(db_session, memory_user):
         display_name="Mem User 2",
         hashed_password=hash_password("testpass"),
         role="user",
-        native_language="en",
+        native_language="es",
         is_active=True,
     )
     db_session.add(user2)

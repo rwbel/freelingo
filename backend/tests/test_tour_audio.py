@@ -32,7 +32,7 @@ async def test_narration_requires_authentication(client, tour_service):
 
 async def test_client_text_interface_language_and_voice_are_cached(client, test_user, tour_service):
     _, headers = test_user
-    url = "/api/tts/tour/fr/step6"
+    url = "/api/tts/tour/es/step6"
     body = {"text": "Pratiquez avec Lingu.", "voice": "coral"}
     first = await client.post(url, headers=headers, json=body)
     second = await client.post(url, headers=headers, json=body)
@@ -40,7 +40,7 @@ async def test_client_text_interface_language_and_voice_are_cached(client, test_
     assert first.content == second.content == b"ID3tour-audio"
     assert first.headers["content-type"] == "audio/mpeg"
     assert first.headers["cache-control"] == "no-store"
-    tour_service.synthesize.assert_awaited_once_with(body["text"], "coral", language="fr")
+    tour_service.synthesize.assert_awaited_once_with(body["text"], "coral", language="es-ES")
 
 
 @pytest.mark.parametrize(
@@ -72,7 +72,7 @@ async def test_cache_identity_covers_effective_settings_and_text(tour_service):
 
     original = await audio()
     assert await audio("nova") == original
-    paths = {original, await audio("coral"), await audio(locale="en")}
+    paths = {original, await audio("coral"), await audio(locale="es-ES")}
     tour_service.model = "another-configured-model"
     paths.add(await audio())
     tour_service.speed = 0.9
@@ -108,7 +108,7 @@ async def test_kokoro_keeps_configured_voice(client, test_user, tour_service, mo
         "/api/tts/tour/es/step1", headers=headers, json={"text": TEXT, "voice": "stale"}
     )
     assert first.status_code == second.status_code == 200
-    service.synthesize.assert_awaited_once_with(TEXT, "af_heart", language="es")
+    service.synthesize.assert_awaited_once_with(TEXT, "af_heart", language="es-ES")
 
 
 async def test_concurrent_requests_generate_only_once(tour_service):

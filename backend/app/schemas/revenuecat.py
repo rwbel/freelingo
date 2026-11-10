@@ -51,7 +51,7 @@ class RevenueCatCustomerInfo(BaseModel):
 
 
 class RevenueCatSyncRequest(BaseModel):
-    import_stripe: bool = False
+    pass
 
 
 class BillingStatusResponse(BaseModel):

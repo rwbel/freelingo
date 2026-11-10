@@ -15,7 +15,7 @@ async def test_contact_uses_first_admin_native_language(client, admin_user):
     from unittest.mock import AsyncMock, patch
 
     admin, _ = admin_user
-    admin.native_language = "it"
+    admin.native_language = "es"
 
     with patch(
         "app.routers.contact.email_service.send_contact_email",
@@ -28,7 +28,7 @@ async def test_contact_uses_first_admin_native_language(client, admin_user):
 
     assert response.status_code == 204
     mock_send.assert_awaited_once()
-    assert mock_send.call_args.kwargs["locale"] == "it"
+    assert mock_send.call_args.kwargs["locale"] == "es"
 
 
 @pytest.mark.asyncio

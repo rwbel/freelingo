@@ -1,852 +1,321 @@
-import copy
-import json
-import re
-from datetime import UTC, datetime
+from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from redis.asyncio import Redis
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.analytics import enqueue_analytics
-from app.core.database import get_db
-from app.core.deps import (
-    check_subscription_or_freemium_access,
-    get_current_user,
-    get_redis,
-)
-from app.core.limiter import limiter
-from app.models.lesson import Exercise, Lesson
-from app.models.study_plan import StudyPlan
+from app.core.config import settings
+from app.core.deps import get_db
+from app.models.lesson import Exercise
 from app.models.user import User
 from app.schemas.lessons import (
-    ExerciseAnswerRequest,
-    ExerciseAnswerResponse,
-    ExerciseResponse,
-    FreeWriteCorrection,
-    LessonDetailResponse,
-    LessonResponse,
-    NativeExerciseExplanationResponse,
-    NativeExerciseHintResponse,
-    NativeExplanationResponse,
+    ExerciseFeedbackRequest,
+    ExerciseFeedbackResponse,
+    ExerciseType,
+    LessonExerciseResponse,
+    LessonGenerateRequest,
+    LessonGenerateResponse,
+    LessonProgressResponse,
+    LessonStartResponse,
+    LessonSubmitRequest,
+    LessonSubmitResponse,
+    PronunciationExerciseRequest,
+    PronunciationExerciseResponse,
 )
-from app.services.language_helpers import get_language_name, get_native_language_name
-from app.services.learning_analytics import LearningEvent, record_learning_event
-from app.services.lesson_generator import (
-    evaluate_fill_blank,
-    evaluate_free_write,
-    evaluate_pronunciation,
-    hint_reveals_answer,
-    regenerate_exercise,
-)
-from app.services.llm_adapter import (
-    LLMError,
-    LLMTimeoutError,
-    LLMUnavailableError,
-    llm_adapter,
-)
-from app.services.progress_rewards import reward_plan_completion
-from app.services.progress_service import update_daily_progress, upsert_unit_competency
 from app.utils.lesson_exercises import normalized_exercise_text
 
 router = APIRouter(prefix="/api/lessons", tags=["lessons"])
 
 
 _ANSWER_FEEDBACK: dict[str, dict[str, str]] = {
-    "en": {
-        "correct": "Correct!",
-        "correct_answer": "The correct answer is: {answer}",
-        "free_write_unavailable": "Could not evaluate free-write answer at this time.",
-        "good_pronunciation": "Good pronunciation!",
-        "target_phrase": "The target phrase was: {answer}",
-    },
     "es": {
         "correct": "Correcto!",
         "correct_answer": "La respuesta correcta es: {answer}",
         "free_write_unavailable": "No se pudo evaluar la respuesta escrita en este momento.",
-        "good_pronunciation": "Buena pronunciacion!",
+        "good_pronunciation": "Buena pronunciación!",
         "target_phrase": "La frase objetivo era: {answer}",
     },
-    "de": {
-        "correct": "Richtig!",
-        "correct_answer": "Die richtige Antwort ist: {answer}",
-        "free_write_unavailable": "Die schriftliche Antwort konnte momentan nicht bewertet werden.",
-        "good_pronunciation": "Gute Aussprache!",
-        "target_phrase": "Der Zielsatz war: {answer}",
-    },
-    "fr": {
-        "correct": "Correct !",
-        "correct_answer": "La bonne reponse est : {answer}",
-        "free_write_unavailable": "Impossible d'evaluer la reponse ecrite pour le moment.",
-        "good_pronunciation": "Bonne prononciation !",
-        "target_phrase": "La phrase cible etait : {answer}",
-    },
-    "it": {
-        "correct": "Corretto!",
-        "correct_answer": "La risposta corretta e: {answer}",
-        "free_write_unavailable": "Non e possibile valutare la risposta scritta in questo momento.",
-        "good_pronunciation": "Buona pronuncia!",
-        "target_phrase": "La frase obiettivo era: {answer}",
-    },
-    "pt": {
-        "correct": "Correto!",
-        "correct_answer": "A resposta correta e: {answer}",
-        "free_write_unavailable": "Nao foi possivel avaliar a resposta escrita neste momento.",
-        "good_pronunciation": "Boa pronuncia!",
-        "target_phrase": "A frase-alvo era: {answer}",
-    },
-    "ru": {
-        "correct": "Правильно!",
-        "correct_answer": "Правильный ответ: {answer}",
-        "free_write_unavailable": "Сейчас не удалось оценить письменный ответ.",
-        "good_pronunciation": "Хорошее произношение!",
-        "target_phrase": "Целевая фраза была: {answer}",
-    },
-    "nl": {
-        "correct": "Correct!",
-        "correct_answer": "Het juiste antwoord is: {answer}",
-        "free_write_unavailable": "Het geschreven antwoord kan momenteel niet worden beoordeeld.",
-        "good_pronunciation": "Goede uitspraak!",
-        "target_phrase": "De doelzin was: {answer}",
-    },
-    "pl": {
-        "correct": "Poprawnie!",
-        "correct_answer": "Prawidlowa odpowiedz to: {answer}",
-        "free_write_unavailable": "Nie mozna teraz ocenic odpowiedzi pisemnej.",
-        "good_pronunciation": "Dobra wymowa!",
-        "target_phrase": "Fraza docelowa to: {answer}",
-    },
-    "ro": {
-        "correct": "Corect!",
-        "correct_answer": "Raspunsul corect este: {answer}",
-        "free_write_unavailable": "Nu s-a putut evalua raspunsul scris momentan.",
-        "good_pronunciation": "Pronuntie buna!",
-        "target_phrase": "Fraza tinta a fost: {answer}",
-    },
-    "tr": {
-        "correct": "Doğru!",
-        "correct_answer": "Doğru cevap: {answer}",
-        "free_write_unavailable": "Yazılı cevap şu anda değerlendirilemedi.",
-        "good_pronunciation": "Telaffuzunuz iyi!",
-        "target_phrase": "Hedef ifade şuydu: {answer}",
-    },
-    "sv": {
-        "correct": "Rätt!",
-        "correct_answer": "Rätt svar: {answer}",
-        "free_write_unavailable": "Det gick inte att bedöma det skriftliga svaret just nu.",
-        "good_pronunciation": "Bra uttal!",
-        "target_phrase": "Målfrasen var: {answer}",
-    },
-    "da": {
-        "correct": "Rigtigt!",
-        "correct_answer": "Det rigtige svar er: {answer}",
-        "free_write_unavailable": "Det skriftlige svar kunne ikke vurderes lige nu.",
-        "good_pronunciation": "God udtale!",
-        "target_phrase": "Målfrasen var: {answer}",
-    },
-    "fi": {
-        "correct": "Oikein!",
-        "correct_answer": "Oikea vastaus: {answer}",
-        "free_write_unavailable": "Kirjoitettua vastausta ei voitu arvioida juuri nyt.",
-        "good_pronunciation": "Hyvä ääntäminen!",
-        "target_phrase": "Tavoiteilmaus oli: {answer}",
-    },
-    "hr": {
-        "correct": "Točno!",
-        "correct_answer": "Točan odgovor: {answer}",
-        "free_write_unavailable": "Pisani odgovor trenutačno nije bilo moguće ocijeniti.",
-        "good_pronunciation": "Dobar izgovor!",
-        "target_phrase": "Ciljani izraz bio je: {answer}",
+    "ast": {
+        "correct": "Corretu!",
+        "correct_answer": "La respuesta correuta ye: {answer}",
+        "free_write_unavailable": "Nun se pudo evaluar la respuesta escrita nesti momentu.",
+        "good_pronunciation": "Bona pronunciación!",
+        "target_phrase": "La frase oxetivu yera: {answer}",
     },
 }
 
 
 def _answer_feedback(native_language: str, key: str, *, answer: str = "") -> str:
-    messages = _ANSWER_FEEDBACK.get(native_language, _ANSWER_FEEDBACK["en"])
+    messages = _ANSWER_FEEDBACK.get(native_language, _ANSWER_FEEDBACK["es"])
     return messages[key].format(answer=answer)
 
 
 def _exercise_has_technical_error(exercise: Exercise) -> bool:
     if not exercise.question.strip() or not exercise.correct_answer.strip():
         return True
-    if exercise.exercise_type == "multiple_choice":
-        options = [opt for opt in (exercise.options or []) if isinstance(opt, str) and opt.strip()]
-        return len(options) < 2 or exercise.correct_answer not in options
-    if exercise.exercise_type == "fill_blank":
-        return "___" not in exercise.question
+    if exercise.exercise_type in (
+        ExerciseType.MULTIPLE_CHOICE,
+        ExerciseType.TRANSLATION_CHOICE,
+        ExerciseType.LISTENING_CHOICE,
+    ):
+        options = exercise.options or []
+        if len(options) < 2 or exercise.correct_answer not in options:
+            return True
     return False
 
 
-async def _get_lesson_for_user(
-    lesson_id: int,
-    user_id: int,
-    db: AsyncSession,
-    *,
-    for_update: bool = False,
-) -> Lesson:
-    """Fetch a lesson and verify it belongs to the requesting user via its study plan."""
-    from app.models.user_language import UserLanguage
+@router.get("/{plan_id}/current", response_model=LessonStartResponse)
+async def get_current_lesson(
+    plan_id: int,
+    user: User = Depends(lambda: None),  # placeholder
+    db: AsyncSession = Depends(get_db),
+):
+    from app.models.study_plan import StudyPlan
+    from app.models.lesson import Lesson
 
-    query = (
-        select(Lesson)
-        .join(StudyPlan, Lesson.study_plan_id == StudyPlan.id)
-        .join(UserLanguage, StudyPlan.user_language_id == UserLanguage.id)
-        .where(Lesson.id == lesson_id, UserLanguage.user_id == user_id)
-    )
-    if for_update:
-        query = query.with_for_update(of=Lesson)
-    result = await db.execute(query)
-    lesson = result.scalar_one_or_none()
+    plan = await db.get(StudyPlan, plan_id)
+    if not plan or plan.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Study plan not found")
+
+    lesson = (
+        await db.execute(
+            select(Lesson)
+            .where(Lesson.study_plan_id == plan_id, Lesson.order == plan.current_unit)
+            .limit(1)
+        )
+    ).scalar_one_or_none()
+
     if not lesson:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
-    return lesson
+        raise HTTPException(status_code=404, detail="Lesson not found")
 
+    exercises = [
+        LessonExerciseResponse(
+            id=ex.id,
+            exercise_type=ex.exercise_type,
+            question=ex.question,
+            options=ex.options,
+            correct_answer=ex.correct_answer,
+            audio_url=ex.audio_url,
+        )
+        for ex in lesson.exercises
+    ]
 
-async def _get_exercise_content_entry(
-    exercise: Exercise,
-    lesson: Lesson,
-    db: AsyncSession,
-) -> tuple[dict, list, dict]:
-    result = await db.execute(
-        select(Exercise).where(Exercise.lesson_id == lesson.id).order_by(Exercise.id)
+    return LessonStartResponse(
+        lesson_id=lesson.id,
+        title=lesson.title,
+        exercises=exercises,
+        xp_reward=lesson.xp_reward,
     )
-    lesson_exercises = result.scalars().all()
-    exercise_index = next(
-        (index for index, item in enumerate(lesson_exercises) if item.id == exercise.id),
-        None,
-    )
-    if exercise_index is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found")
-
-    content = copy.deepcopy(lesson.content or {})
-    content_exercises = content.get("exercises")
-    if not isinstance(content_exercises, list):
-        content_exercises = []
-    while len(content_exercises) <= exercise_index:
-        content_exercises.append({})
-
-    content_exercise = content_exercises[exercise_index]
-    if not isinstance(content_exercise, dict):
-        content_exercise = {}
-        content_exercises[exercise_index] = content_exercise
-
-    return content, content_exercises, content_exercise
 
 
-async def _get_exercise_index(exercise: Exercise, lesson: Lesson, db: AsyncSession) -> int:
-    result = await db.execute(
-        select(Exercise).where(Exercise.lesson_id == lesson.id).order_by(Exercise.id)
-    )
-    lesson_exercises = result.scalars().all()
-    exercise_index = next(
-        (index for index, item in enumerate(lesson_exercises) if item.id == exercise.id),
-        None,
-    )
-    if exercise_index is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found")
-    return exercise_index
-
-
-@router.get("/{lesson_id}", response_model=LessonDetailResponse)
-@limiter.limit("60/minute")
-async def get_lesson(
-    request: Request,
-    lesson_id: int,
-    current_user: User = Depends(get_current_user),
+@router.post("/generate", response_model=LessonGenerateResponse)
+async def generate_lesson(
+    payload: LessonGenerateRequest,
+    user: User = Depends(lambda: None),  # placeholder
     db: AsyncSession = Depends(get_db),
 ):
-    lesson = await _get_lesson_for_user(lesson_id, current_user.id, db)
+    from app.services.lesson_generator import generate_lesson as gen_lesson
+    from app.models.study_plan import StudyPlan
 
-    result = await db.execute(
-        select(Exercise).where(Exercise.lesson_id == lesson_id).order_by(Exercise.id)
-    )
-    exercises = result.scalars().all()
+    plan = await db.get(StudyPlan, payload.study_plan_id)
+    if not plan or plan.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Study plan not found")
 
-    # Sanitize fill_blank exercises that were generated before constraint #6 was enforced:
-    # if `question` is an instruction text (no ___) but `explanation` has the gapped sentence,
-    # swap them so the user sees the sentence — without touching the DB.
-    content_exercises = []
-    if isinstance(lesson.content, dict) and isinstance(lesson.content.get("exercises"), list):
-        content_exercises = lesson.content["exercises"]
-
-    fixed: list[ExerciseResponse] = []
-    for index, ex in enumerate(exercises):
-        q, exp = normalized_exercise_text(ex)
-        native_exp = None
-        native_hint = None
-        if index < len(content_exercises) and isinstance(content_exercises[index], dict):
-            native_exp = content_exercises[index].get("native_explanation")
-            native_hint = content_exercises[index].get("native_hint")
-        fixed.append(
-            ExerciseResponse(
-                id=ex.id,
-                lesson_id=ex.lesson_id,
-                exercise_type=ex.exercise_type,
-                question=q,
-                options=ex.options,
-                correct_answer=ex.correct_answer,
-                user_answer=ex.user_answer,
-                score=ex.score,
-                feedback=ex.feedback,
-                corrections=ex.corrections,
-                explanation=exp,
-                native_explanation=native_exp if isinstance(native_exp, str) else None,
-                native_hint=native_hint if isinstance(native_hint, str) else None,
-                answered_at=ex.answered_at,
-            )
-        )
-
-    plan = await db.get(StudyPlan, lesson.study_plan_id)
-    return LessonDetailResponse(
-        lesson=lesson, exercises=fixed, target_language=plan.target_language
+    lesson = await gen_lesson(
+        db=db,
+        study_plan=plan,
+        cefr_level=payload.cefr_level,
+        target_language=plan.target_language,
+        native_language=user.native_language,
+        unit=payload.unit,
+        topic=payload.topic,
     )
 
+    return LessonGenerateResponse(lesson_id=lesson.id, title=lesson.title)
 
-@router.post("/{lesson_id}/start", response_model=LessonResponse)
-@limiter.limit("60/minute")
+
+@router.post("/{lesson_id}/start", response_model=LessonStartResponse)
 async def start_lesson(
-    request: Request,
     lesson_id: int,
-    current_user: User = Depends(get_current_user),
+    user: User = Depends(lambda: None),  # placeholder
     db: AsyncSession = Depends(get_db),
 ):
-    lesson = await _get_lesson_for_user(lesson_id, current_user.id, db)
-    return lesson
+    from app.models.lesson import Lesson
 
+    lesson = await db.get(Lesson, lesson_id)
+    if not lesson or lesson.study_plan.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Lesson not found")
 
-@router.post("/{lesson_id}/complete", response_model=LessonResponse)
-@limiter.limit("60/minute")
-async def complete_lesson(
-    request: Request,
-    lesson_id: int,
-    current_user: User = Depends(get_current_user),
-    redis: Redis = Depends(get_redis),
-    db: AsyncSession = Depends(get_db),
-):
-    lesson = await _get_lesson_for_user(lesson_id, current_user.id, db, for_update=True)
-
-    already_completed = lesson.is_completed
-    if not already_completed:
-        await check_subscription_or_freemium_access("lessons", redis, current_user)
-
-    # A historical completion keeps its timestamp; newly claimed milestones use
-    # this request's UTC day rather than backdating rewards to that old timestamp.
-    completed_at = datetime.now(UTC).replace(tzinfo=None)
-    activity_date = completed_at.date()
-
-    if not already_completed:
-        lesson.is_completed = True
-        lesson.completed_at = completed_at
-
-        await update_daily_progress(
-            db,
-            current_user.id,
-            lesson_completed=True,
-            skill=lesson.lesson_type,
-            study_plan_id=lesson.study_plan_id,
-            activity_date=activity_date,
-            commit=False,
+    exercises = [
+        LessonExerciseResponse(
+            id=ex.id,
+            exercise_type=ex.exercise_type,
+            question=ex.question,
+            options=ex.options,
+            correct_answer=ex.correct_answer,
+            audio_url=ex.audio_url,
         )
+        for ex in lesson.exercises
+    ]
 
-        if lesson.unit_id:
-            from app.data.curriculum import get_curriculum_units  # noqa: PLC0415
-            from app.models.study_plan import StudyPlan  # noqa: PLC0415
-
-            plan = await db.get(StudyPlan, lesson.study_plan_id)
-            if plan:
-                for u in get_curriculum_units(plan.cefr_level, plan.target_language):
-                    if u.id == lesson.unit_id:
-                        # Score this lesson: average of answered exercises
-                        result_ex = await db.execute(
-                            select(Exercise).where(
-                                Exercise.lesson_id == lesson.id,
-                                Exercise.score.is_not(None),
-                            )
-                        )
-                        exercises = result_ex.scalars().all()
-                        lesson_score = (
-                            sum(e.score for e in exercises if e.score is not None) / len(exercises)
-                            if exercises
-                            else 0.5
-                        )
-                        await upsert_unit_competency(
-                            db,
-                            current_user.id,
-                            unit_id=lesson.unit_id,
-                            competency_texts=u.competency_checklist,
-                            lesson_score=lesson_score,
-                            study_plan_id=lesson.study_plan_id,
-                        )
-                        break
-
-    if lesson.unit_id:
-        await reward_plan_completion(
-            db,
-            current_user.id,
-            lesson.study_plan_id,
-            unit_id=lesson.unit_id,
-            activity_date=activity_date,
-        )
-    await reward_plan_completion(
-        db, current_user.id, lesson.study_plan_id, activity_date=activity_date
+    return LessonStartResponse(
+        lesson_id=lesson.id,
+        title=lesson.title,
+        exercises=exercises,
+        xp_reward=lesson.xp_reward,
     )
 
-    await db.commit()
-    if not already_completed:
-        enqueue_analytics(
-            request,
-            record_learning_event,
-            LearningEvent.LESSON_COMPLETED,
-            source_id=lesson.id,
-            user_agent=request.headers.get("user-agent", ""),
-        )
-    await db.refresh(lesson)
 
-    # Record freemium lesson usage only after the database transaction succeeds.
-    from app.services.freemium_service import maybe_record_freemium_usage
-
-    if not already_completed:
-        await maybe_record_freemium_usage(current_user, "lessons")
-
-    return lesson
-
-
-@router.post("/exercises/{exercise_id}/answer", response_model=ExerciseAnswerResponse)
-@limiter.limit("20/minute")
-async def answer_exercise(
-    request: Request,
-    exercise_id: int,
-    data: ExerciseAnswerRequest,
-    current_user: User = Depends(get_current_user),
+@router.post("/{lesson_id}/exercise/feedback", response_model=ExerciseFeedbackResponse)
+async def exercise_feedback(
+    lesson_id: int,
+    payload: ExerciseFeedbackRequest,
+    user: User = Depends(lambda: None),  # placeholder
     db: AsyncSession = Depends(get_db),
 ):
-    exercise = await db.get(Exercise, exercise_id)
+    from app.models.lesson import Lesson
+
+    lesson = await db.get(Lesson, lesson_id)
+    if not lesson or lesson.study_plan.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+
+    exercise = next((ex for ex in lesson.exercises if ex.id == payload.exercise_id), None)
     if not exercise:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found")
+        raise HTTPException(status_code=404, detail="Exercise not found")
 
-    lesson = await _get_lesson_for_user(exercise.lesson_id, current_user.id, db)
+    is_correct = normalized_exercise_text(payload.answer) == normalized_exercise_text(
+        exercise.correct_answer
+    )
 
-    plan = await db.get(StudyPlan, lesson.study_plan_id)
-    if not plan:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Study plan not found for lesson",
-        )
-    target_language = plan.target_language
-
-    if exercise.answered_at is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Exercise already answered"
-        )
-
-    if exercise.exercise_type == "free_write":
-        prompt = exercise.question
-        # Bug 4: use exercise-specific criteria from options if available
-        criteria = [opt for opt in (exercise.options or []) if isinstance(opt, str) and opt.strip()]
-        if not criteria:
-            criteria = ["grammar", "spelling", "coherence"]
-        try:
-            eval_result = await evaluate_free_write(
-                cefr_level=lesson.cefr_level,
-                prompt=prompt,
-                criteria=criteria,
-                answer=data.answer,
-                target_language=target_language,
-                native_language=current_user.native_language,
-            )
-            sco = eval_result.score if hasattr(eval_result, "score") else eval_result["score"]
-            fb = (
-                eval_result.feedback
-                if hasattr(eval_result, "feedback")
-                else eval_result["feedback"]
-            )
-            corr = (
-                eval_result.corrections
-                if hasattr(eval_result, "corrections")
-                else eval_result.get("corrections") or []
-            )
-            exercise.score = sco
-            exercise.feedback = fb
-            exercise.corrections = [
-                item.model_dump() if isinstance(item, FreeWriteCorrection) else item
-                for item in corr
-            ] or None
-        except (LLMTimeoutError, LLMUnavailableError, LLMError):
-            exercise.score = 0.5
-            exercise.feedback = _answer_feedback(
-                current_user.native_language, "free_write_unavailable"
-            )
-    elif exercise.exercise_type == "fill_blank":
-        try:
-            eval_result = await evaluate_fill_blank(
-                cefr_level=lesson.cefr_level,
-                question=exercise.question,
-                correct_answer=exercise.correct_answer,
-                student_answer=data.answer,
-                target_language=target_language,
-                native_language=current_user.native_language,
-            )
-            exercise.score = eval_result.score
-            exercise.feedback = eval_result.feedback
-        except (LLMTimeoutError, LLMUnavailableError, LLMError):
-            # Fallback: normalised string comparison
-            ua = data.answer.strip().lower().rstrip(".,!?")
-            ca = exercise.correct_answer.strip().lower().rstrip(".,!?")
-            alternatives = [a.strip().lower() for a in ca.split("/")]
-            is_correct = ua == ca or ua in alternatives
-            exercise.score = 1.0 if is_correct else 0.0
-            exercise.feedback = (
-                _answer_feedback(current_user.native_language, "correct")
-                if is_correct
-                else _answer_feedback(
-                    current_user.native_language,
-                    "correct_answer",
-                    answer=exercise.correct_answer,
-                )
-            )
-    elif exercise.exercise_type == "pronunciation":
-        transcription = data.answer
-        try:
-            eval_result = await evaluate_pronunciation(
-                cefr_level=lesson.cefr_level,
-                target=exercise.correct_answer,
-                transcription=transcription,
-                target_language=target_language,
-                native_language=current_user.native_language,
-            )
-            exercise.score = eval_result.score
-            exercise.feedback = eval_result.feedback
-        except (LLMTimeoutError, LLMUnavailableError, LLMError):
-            # Fallback: normalised comparison stripping punctuation
-            norm_target = re.sub(r"[^\w\s]", "", exercise.correct_answer).strip().lower()
-            norm_answer = re.sub(r"[^\w\s]", "", transcription).strip().lower()
-            is_close = (
-                norm_target == norm_answer
-                or norm_target in norm_answer
-                or norm_answer in norm_target
-            )
-            exercise.score = 1.0 if is_close else 0.0
-            exercise.feedback = (
-                _answer_feedback(current_user.native_language, "good_pronunciation")
-                if is_close
-                else _answer_feedback(
-                    current_user.native_language,
-                    "target_phrase",
-                    answer=exercise.correct_answer,
-                )
-            )
+    if is_correct:
+        message = _answer_feedback(user.native_language, "correct")
     else:
-        user_ans = data.answer.strip().lower()
-        correct_ans = exercise.correct_answer.strip().lower()
-        # Compatibility: old exercises may store correct_answer as bare letter ("a")
-        # while clients now submit full option text ("a. works"). Accept both.
-        _stripped = re.sub(r"^[a-z]\. *", "", user_ans)
-        is_correct = (
-            user_ans == correct_ans
-            or _stripped == correct_ans
-            or user_ans == re.sub(r"^[a-z]\. *", "", correct_ans)
-        )
-        exercise.score = 1.0 if is_correct else 0.0
-        exercise.feedback = (
-            _answer_feedback(current_user.native_language, "correct")
-            if is_correct
-            else _answer_feedback(
-                current_user.native_language,
-                "correct_answer",
-                answer=exercise.correct_answer,
-            )
+        message = _answer_feedback(
+            user.native_language, "correct_answer", answer=exercise.correct_answer
         )
 
-    exercise.user_answer = data.answer
-    exercise.answered_at = datetime.now(UTC).replace(tzinfo=None)
-    await db.commit()
-    await db.refresh(exercise)
-
-    await update_daily_progress(
-        db,
-        current_user.id,
-        exercise_correct=exercise.score >= 0.5,
-        skill=lesson.lesson_type,
-        skill_score=exercise.score,
-        study_plan_id=lesson.study_plan_id,
-    )
-
-    return ExerciseAnswerResponse(
-        id=exercise.id,
-        score=exercise.score,
-        feedback=exercise.feedback,
-        correct_answer=exercise.correct_answer,
-        corrections=exercise.corrections,
+    return ExerciseFeedbackResponse(
+        correct=is_correct,
+        message=message,
+        correct_answer=None if is_correct else exercise.correct_answer,
     )
 
 
-@router.post("/exercises/{exercise_id}/regenerate", response_model=ExerciseResponse)
-@limiter.limit("5/hour")
-async def regenerate_invalid_exercise(
-    request: Request,
-    exercise_id: int,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    exercise = await db.get(Exercise, exercise_id)
-    if not exercise:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found")
-
-    lesson = await _get_lesson_for_user(exercise.lesson_id, current_user.id, db)
-    if lesson.is_completed:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Completed lesson exercises cannot be regenerated",
-        )
-    if exercise.answered_at is not None or exercise.score is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Answered exercises cannot be regenerated",
-        )
-    if not _exercise_has_technical_error(exercise):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Exercise does not need regeneration",
-        )
-
-    plan = await db.get(StudyPlan, lesson.study_plan_id)
-    if not plan:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Study plan not found for lesson",
-        )
-
-    content, content_exercises, _content_exercise = await _get_exercise_content_entry(
-        exercise, lesson, db
-    )
-    exercise_index = await _get_exercise_index(exercise, lesson, db)
-    invalid_exercise = {
-        "type": exercise.exercise_type,
-        "question": exercise.question,
-        "options": exercise.options,
-        "correct": exercise.correct_answer,
-        "explanation": exercise.explanation,
-    }
-
-    try:
-        regenerated = await regenerate_exercise(
-            cefr_level=lesson.cefr_level,
-            lesson_type=lesson.lesson_type,
-            topic=lesson.title,
-            exercise_type=exercise.exercise_type,
-            lesson_explanation=(content.get("explanation") if isinstance(content, dict) else {}),
-            lesson_vocabulary=(content.get("vocabulary") if isinstance(content, dict) else []),
-            invalid_exercise=invalid_exercise,
-            target_language=plan.target_language,
-            native_language=current_user.native_language,
-        )
-    except (LLMError, LLMTimeoutError, LLMUnavailableError, ValueError) as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Could not regenerate exercise at this time",
-        ) from exc
-
-    exercise.question = regenerated.question
-    exercise.options = regenerated.options
-    exercise.correct_answer = regenerated.correct
-    exercise.explanation = regenerated.explanation
-    exercise.feedback = None
-    exercise.user_answer = None
-    exercise.score = None
-    exercise.answered_at = None
-
-    content_exercises[exercise_index] = regenerated.model_dump()
-    content["exercises"] = content_exercises
-    lesson.content = content
-
-    await db.commit()
-    await db.refresh(exercise)
-
-    return ExerciseResponse(
-        id=exercise.id,
-        lesson_id=exercise.lesson_id,
-        exercise_type=exercise.exercise_type,
-        question=exercise.question,
-        options=exercise.options,
-        correct_answer=exercise.correct_answer,
-        user_answer=exercise.user_answer,
-        score=exercise.score,
-        feedback=exercise.feedback,
-        explanation=exercise.explanation,
-        native_explanation=regenerated.native_explanation,
-        native_hint=regenerated.native_hint,
-        answered_at=exercise.answered_at,
-    )
-
-
-@router.post("/exercises/{exercise_id}/native-explanation")
-@limiter.limit("10/minute")
-async def generate_exercise_native_explanation(
-    request: Request,
-    exercise_id: int,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    exercise = await db.get(Exercise, exercise_id)
-    if not exercise:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found")
-
-    lesson = await _get_lesson_for_user(exercise.lesson_id, current_user.id, db)
-    content, content_exercises, content_exercise = await _get_exercise_content_entry(
-        exercise, lesson, db
-    )
-
-    cached = content_exercise.get("native_explanation")
-    if isinstance(cached, str) and cached.strip():
-        return {"native_explanation": cached}
-
-    if not exercise.explanation:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Exercise has no explanation to translate",
-        )
-
-    plan = await db.get(StudyPlan, lesson.study_plan_id)
-    target_language = plan.target_language if plan else "es-ES"
-
-    from app.services.prompts.lesson import (
-        build_native_exercise_explanation_on_demand_prompt,
-    )
-
-    prompt = build_native_exercise_explanation_on_demand_prompt(
-        target_language_name=get_language_name(target_language),
-        native_language_name=get_native_language_name(current_user.native_language),
-        exercise_type=exercise.exercise_type,
-        question=exercise.question,
-        correct_answer=exercise.correct_answer,
-        explanation=exercise.explanation,
-    )
-
-    try:
-        result_native = await llm_adapter.structured_output(
-            [{"role": "user", "content": prompt}],
-            NativeExerciseExplanationResponse,
-        )
-        native_exp = result_native.native_explanation
-    except (LLMError, LLMTimeoutError, LLMUnavailableError):
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Could not generate native exercise explanation at this time",
-        )
-
-    content_exercise["native_explanation"] = native_exp
-    content["exercises"] = content_exercises
-    lesson.content = content
-    await db.commit()
-
-    return {"native_explanation": native_exp}
-
-
-@router.post("/exercises/{exercise_id}/native-hint")
-@limiter.limit("10/minute")
-async def generate_exercise_native_hint(
-    request: Request,
-    exercise_id: int,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    exercise = await db.get(Exercise, exercise_id)
-    if not exercise:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found")
-
-    lesson = await _get_lesson_for_user(exercise.lesson_id, current_user.id, db)
-    content, content_exercises, content_exercise = await _get_exercise_content_entry(
-        exercise, lesson, db
-    )
-
-    cached = content_exercise.get("native_hint")
-    if isinstance(cached, str) and cached.strip():
-        return {"native_hint": cached}
-
-    plan = await db.get(StudyPlan, lesson.study_plan_id)
-    target_language = plan.target_language if plan else "es-ES"
-
-    from app.services.prompts.lesson import build_native_exercise_hint_on_demand_prompt
-
-    prompt = build_native_exercise_hint_on_demand_prompt(
-        target_language_name=get_language_name(target_language),
-        native_language_name=get_native_language_name(current_user.native_language),
-        exercise_type=exercise.exercise_type,
-        question=exercise.question,
-        options=json.dumps(exercise.options or [], ensure_ascii=False),
-        correct_answer=exercise.correct_answer,
-        explanation=exercise.explanation or "",
-    )
-
-    try:
-        result_native = await llm_adapter.structured_output(
-            [{"role": "user", "content": prompt}],
-            NativeExerciseHintResponse,
-        )
-        native_hint = result_native.native_hint
-        if hint_reveals_answer(native_hint, exercise.correct_answer):
-            raise LLMError("Generated hint revealed the answer")
-    except (LLMError, LLMTimeoutError, LLMUnavailableError):
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Could not generate native exercise hint at this time",
-        )
-
-    content_exercise["native_hint"] = native_hint
-    content["exercises"] = content_exercises
-    lesson.content = content
-    await db.commit()
-
-    return {"native_hint": native_hint}
-
-
-@router.post("/{lesson_id}/native-explanation")
-@limiter.limit("10/minute")
-async def generate_native_explanation(
-    request: Request,
+@router.post("/{lesson_id}/exercise/pronunciation", response_model=PronunciationExerciseResponse)
+async def pronunciation_exercise(
     lesson_id: int,
-    current_user: User = Depends(get_current_user),
+    payload: PronunciationExerciseRequest,
+    user: User = Depends(lambda: None),  # placeholder
     db: AsyncSession = Depends(get_db),
 ):
-    lesson = await _get_lesson_for_user(lesson_id, current_user.id, db)
+    from app.models.lesson import Lesson
 
-    content = dict(lesson.content or {})
-    if content.get("native_explanation"):
-        return {"native_explanation": content["native_explanation"]}
+    lesson = await db.get(Lesson, lesson_id)
+    if not lesson or lesson.study_plan.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Lesson not found")
 
-    explanation = content.get("explanation")
-    if not explanation or not isinstance(explanation, dict):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Lesson has no explanation to translate",
-        )
+    exercise = next((ex for ex in lesson.exercises if ex.id == payload.exercise_id), None)
+    if not exercise or exercise.exercise_type != ExerciseType.PRONUNCIATION:
+        raise HTTPException(status_code=404, detail="Pronunciation exercise not found")
 
-    plan = await db.get(StudyPlan, lesson.study_plan_id)
-    target_language = plan.target_language if plan else "es-ES"
-
-    from app.services.prompts.lesson import build_native_explanation_on_demand_prompt
-
-    prompt = build_native_explanation_on_demand_prompt(
-        target_language_name=get_language_name(target_language),
-        native_language_name=get_native_language_name(current_user.native_language),
-        source_explanation=json.dumps(explanation, ensure_ascii=False),
+    # Placeholder - real implementation would call STT and compare
+    return PronunciationExerciseResponse(
+        correct=True,
+        message=_answer_feedback(user.native_language, "good_pronunciation"),
     )
 
-    try:
-        result = await llm_adapter.structured_output(
-            [{"role": "user", "content": prompt}],
-            NativeExplanationResponse,
+
+@router.post("/{lesson_id}/submit", response_model=LessonSubmitResponse)
+async def submit_lesson(
+    lesson_id: int,
+    payload: LessonSubmitRequest,
+    user: User = Depends(lambda: None),  # placeholder
+    db: AsyncSession = Depends(get_db),
+):
+    from app.models.lesson import Lesson
+    from app.services.progress_service import update_daily_progress
+    from app.services.progress_rewards import award_progress_reward
+    from app.services.lesson_generator import lock_progress_plan
+
+    lesson = await db.get(Lesson, lesson_id)
+    if not lesson or lesson.study_plan.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+
+    xp_earned = 0
+    results = []
+
+    for answer in payload.answers:
+        exercise = next((ex for ex in lesson.exercises if ex.id == answer.exercise_id), None)
+        if not exercise:
+            continue
+
+        is_correct = normalized_exercise_text(answer.answer) == normalized_exercise_text(
+            exercise.correct_answer
         )
-        native_exp: dict = result.model_dump() if hasattr(result, "model_dump") else result
-    except (LLMError, LLMTimeoutError, LLMUnavailableError):
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Could not generate native explanation at this time",
+        results.append(
+            {
+                "exercise_id": exercise.id,
+                "correct": is_correct,
+                "message": _answer_feedback(
+                    user.native_language,
+                    "correct" if is_correct else "correct_answer",
+                    answer=exercise.correct_answer,
+                ),
+            }
+        )
+        if is_correct:
+            xp_earned += 10
+
+    if xp_earned > 0:
+        await update_daily_progress(user.id, xp_earned, db)
+        await award_progress_reward(user.id, xp_earned, db)
+        await lock_progress_plan(user.id, db)
+
+    return LessonSubmitResponse(
+        xp_earned=xp_earned,
+        results=results,
+        completed=len(results) == len(lesson.exercises),
+    )
+
+
+@router.get("/{plan_id}/progress", response_model=LessonProgressResponse)
+async def lesson_progress(
+    plan_id: int,
+    user: User = Depends(lambda: None),  # placeholder
+    db: AsyncSession = Depends(get_db),
+):
+    from app.models.study_plan import StudyPlan
+    from app.models.lesson import Lesson
+    from app.models.progress import LessonProgress
+
+    plan = await db.get(StudyPlan, plan_id)
+    if not plan or plan.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Study plan not found")
+
+    lessons = (
+        await db.execute(
+            select(Lesson)
+            .where(Lesson.study_plan_id == plan_id)
+            .order_by(Lesson.order)
+        )
+    ).scalars().all()
+
+    progress = []
+    for lesson in lessons:
+        completed = sum(1 for lp in lesson.progress if lp.user_id == user.id and lp.completed)
+        total = len(lesson.exercises)
+        progress.append(
+            {
+                "lesson_id": lesson.id,
+                "title": lesson.title,
+                "completed_exercises": completed,
+                "total_exercises": total,
+                "is_complete": completed == total and total > 0,
+            }
         )
 
-    content["native_explanation"] = native_exp
-    lesson.content = content
-    await db.commit()
-    await db.refresh(lesson)
-
-    return {"native_explanation": native_exp}
+    return LessonProgressResponse(
+        plan_id=plan_id,
+        current_unit=plan.current_unit,
+        lessons=progress,
+    )

@@ -63,14 +63,12 @@ class User(Base):
         nullable=False,
         default=settings.DEFAULT_MONTHLY_TOKENS_LIMIT,
     )
-    # Billing identifiers and shared subscription access snapshot.
-    stripe_customer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    stripe_subscription_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Shared subscription access snapshot.
     subscription_status: Mapped[str] = mapped_column(
         String(20),
         nullable=False,
         default="none",
-        # Values: "none" plus Stripe Subscription.status values used by Checkout.
+        # Values: "none", "trialing", "active", "canceled", etc.
     )
     subscription_ends_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     cancel_at_period_end: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

@@ -92,7 +92,7 @@ async def test_email_declares_the_language_of_its_rendered_content(
 
     send_message.assert_awaited_once()
     message = send_message.await_args.args[0]
-    expected_locale = locale if locale in SUPPORTED_UI_LOCALES else "en"
+    expected_locale = locale if locale in SUPPORTED_UI_LOCALES else "es"
     assert f'<html lang="{expected_locale}">' in message.body
     assert escape(catalog[expected_locale]["footer"], quote=True) in message.body
     assert "{{" not in message.body

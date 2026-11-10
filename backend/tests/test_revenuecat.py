@@ -809,19 +809,19 @@ async def test_profile_attributes_follow_saved_profile_even_if_provider_fails(
         json={
             "display_name": "Updated name",
             "email": "updated@example.com",
-            "native_language": "pt",
+            "native_language": "es",
         },
     )
     assert response.status_code == 200
     await db_session.refresh(user)
     assert user.display_name == "Updated name"
     assert user.email == "updated@example.com"
-    assert user.native_language == "pt"
+    assert user.native_language == "es"
     assert user.subscription_status == "none"
     attributes = json.loads(provider.attribute_requests[0].content)["attributes"]
     assert attributes["$displayName"]["value"] == "Updated name"
     assert attributes["$email"]["value"] == "updated@example.com"
-    assert attributes["native_language"]["value"] == "pt"
+    assert attributes["native_language"]["value"] == "es"
     assert attributes["country_estimate"]["value"] == "PT"
     assert not provider.requests  # Metadata writes never reconcile subscription access.
 

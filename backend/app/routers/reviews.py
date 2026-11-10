@@ -66,7 +66,7 @@ async def create_my_review(
             comment=review.comment,
             target_language=review.target_language,
             review_id=review.id,
-            locale=admin_locale or "en",
+            locale=admin_locale or "es",
         )
     )
     return review

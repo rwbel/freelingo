@@ -23,4 +23,3 @@ pytest-cov==7.1.0
 httpx==0.28.1
 httpx-ws==0.9.0
 aiosqlite==0.22.1
-stripe==15.6.1
