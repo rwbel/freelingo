@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.1] - Unreleased
+
+### Changed
+
+- The public landing now includes an explicit Register action in the hero for anonymous visitors when registration is enabled on the current installation.
+- The self-hosted landing copy now explicitly states operator-controlled local data storage and a no-KYC positioning for school-oriented deployments.
+- The login screen keeps the Register link visible even when runtime configuration loading is unavailable.
+
 ## [1.12.0] - 2026-11-06
 
 ### Added

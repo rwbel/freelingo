@@ -41,7 +41,8 @@ A short hero line links to `#modalities`, whose two cards precede pricing:
   explicitly to `https://freelingo.app/login`, independently of the current instance's registration
   or session state.
 - Self-hosting identifies AGPL-3.0 software, operator-owned maintenance, and infrastructure/provider
-  costs. Its installation link goes to the repository's `#quick-start`.
+  costs, with local data storage controlled by the operator and no mandatory KYC process. Its
+  installation link goes to the repository's `#quick-start`.
 
 The comparison distinguishes the current installation's main action from the official Cloud link and
 states that accounts and progress are installation-specific. Stripe availability is not evidence that
@@ -52,6 +53,9 @@ an installation is the official Cloud service. The cards render without reveal g
 Hero and end-of-journey CTAs share the same destination: `/dashboard` when a refresh cookie is present,
 `/register` for anonymous visitors when registration is open, otherwise `/login`. Cookie presence
 selects navigation; it does not establish a valid authenticated session.
+
+When registration is open, anonymous visitors also get a dedicated Register button in the hero actions.
+The login screen keeps a visible Register link for users who reached `/login` directly.
 
 The landing revalidates `/api/config` hourly and passes `allowRegistration` to pricing. Registration
 form gating, invitation preservation through legal pages, and backend validation are defined in
