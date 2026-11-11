@@ -1,0 +1,39 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: freelingo-backend:local
+    pull_policy: never
+    ports:
+      - "8000:8000"
+    environment:
+      UVICORN_WORKERS: 1
+      SECRET_KEY: dev-secret-key-for-local-testing-12345678901234
+      STRIPE_ENABLED: "false"
+      ALLOW_REGISTRATION: "true"
+      FIRST_USER_IS_ADMIN: "true"
+      FREEMIUM_TRIAL_ENABLED: "true"
+      FREEMIUM_TRIAL_DAYS: 9999
+      FREEMIUM_CHAT_DAILY_MESSAGES: 9999
+      FREEMIUM_LESSONS_DAILY: 9999
+      FREEMIUM_LISTENING_WEEKLY: 9999
+      FREEMIUM_READING_WEEKLY: 9999
+      FREEMIUM_GAMES_DAILY: 9999
+      FREEMIUM_VOICE_WEEKLY_MINUTES: 9999
+      LLM_PROVIDER: ollama
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: gemma4:e4b
+      TTS_PROVIDER: local
+      TTS_BASE_URL: http://kokoro:8880
+      STT_PROVIDER: local
+      STT_BASE_URL: http://whisper:9000
+      LOG_LEVEL: DEBUG
+      AVAILABLE_TARGET_LANGUAGES: "[\"es-ES\",\"ast-ES\"]"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: freelingo-frontend:local
+    pull_policy: never

@@ -41,6 +41,11 @@ services contained in that file.
 `frontend/Dockerfile.dev` is used only by development Compose. Publishing workflows use the production
 backend and frontend Dockerfiles.
 
+For local production-image builds through `docker-compose.override.yml`, the backend build context is
+`./backend`, while the frontend build context is the repository root with
+`frontend/Dockerfile`. The frontend Dockerfile copies both `frontend/` and the root `messages/`
+directory, so it must not use `./frontend` as its context.
+
 ## Images and publication
 
 Backend images use Python 3.14.9 and pip 26.2.2 with `requirements.txt` plus `constraints.txt`.

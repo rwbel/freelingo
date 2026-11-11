@@ -1,9 +1,94 @@
 from __future__ import annotations
 
 from datetime import datetime
+from enum import StrEnum
 from typing import Self
 
 from pydantic import BaseModel, field_serializer, field_validator, model_validator
+
+
+class ExerciseType(StrEnum):
+    MULTIPLE_CHOICE = "multiple_choice"
+    FILL_BLANK = "fill_blank"
+    TRANSLATION_CHOICE = "translation_choice"
+    LISTENING_CHOICE = "listening_choice"
+    FREE_WRITE = "free_write"
+    PRONUNCIATION = "pronunciation"
+
+
+class LessonExerciseResponse(BaseModel):
+    id: int
+    exercise_type: ExerciseType
+    question: str
+    options: list[str] | None = None
+    correct_answer: str
+    audio_url: str | None = None
+
+
+class LessonGenerateRequest(BaseModel):
+    study_plan_id: int
+    cefr_level: str
+    unit: int
+    topic: str
+
+
+class LessonGenerateResponse(BaseModel):
+    lesson_id: int
+    title: str
+    lesson: LessonExerciseResponse | None = None
+
+
+class LessonStartResponse(BaseModel):
+    lesson_id: int
+    title: str = ""
+    lesson_type: str = ""
+    cefr_level: str = ""
+    week_number: int = 0
+    day_number: int = 0
+    exercises: list[LessonExerciseResponse] = []
+    target_language: str = ""
+    xp_reward: int = 0
+
+
+class LessonSubmitRequest(BaseModel):
+    answers: list[LessonSubmitAnswer]
+
+
+class LessonSubmitAnswer(BaseModel):
+    exercise_id: int
+    answer: str
+
+
+class LessonSubmitResponse(BaseModel):
+    xp_earned: int
+    results: list[dict]
+    completed: bool
+
+
+class LessonProgressResponse(BaseModel):
+    plan_id: int
+    current_unit: int
+    lessons: list[dict]
+
+
+class ExerciseFeedbackRequest(BaseModel):
+    exercise_id: int
+    user_answer: str
+
+
+class ExerciseFeedbackResponse(BaseModel):
+    correct: bool
+    message: str
+
+
+class PronunciationExerciseRequest(BaseModel):
+    exercise_id: int
+    audio_base64: str
+
+
+class PronunciationExerciseResponse(BaseModel):
+    correct: bool
+    message: str
 
 
 class ExerciseContent(BaseModel):

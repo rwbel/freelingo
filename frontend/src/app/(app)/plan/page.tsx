@@ -187,6 +187,22 @@ function PlanContent({ language }: { language: TargetLanguage }) {
   const [error, setError] = useState('')
   const [competencies, setCompetencies] = useState<CompetencyMap>({})
   const [activeDrawer, setActiveDrawer] = useState<CurriculumUnit | null>(null)
+  const [isGeneratingLesson, setIsGeneratingLesson] = useState(false)
+
+  async function generateLesson(week: number, day: number): Promise<void> {
+    if (!plan) return
+    setIsGeneratingLesson(true)
+    try {
+      await apiFetch(
+        `/api/study-plan/generate-lesson/${week}/${day}`,
+        { method: 'POST' },
+      )
+      setActiveDrawer(null)
+      setPlanAttempt((value) => value + 1)
+    } finally {
+      setIsGeneratingLesson(false)
+    }
+  }
   const [activeLessonId, setActiveLessonId] = useState<number | null>(null)
   const [pendingLessons, setPendingLessons] = useState<PendingLesson[]>([])
   const [lessonStates, setLessonStates] = useState<
@@ -617,6 +633,8 @@ function PlanContent({ language }: { language: TargetLanguage }) {
             setActiveDrawer(null)
             router.push(`/lesson/${lessonId}`)
           }}
+          onGenerateLesson={generateLesson}
+          isGenerating={isGeneratingLesson}
         />
       )}
     </div>

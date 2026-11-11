@@ -152,7 +152,7 @@ disable those containers automatically.
 **1. Clone and configure**
 
 ```bash
-git clone https://github.com/artcc/freelingo.git
+git clone https://github.com/rwbel/freelingo.git
 cd freelingo
 cp .env.example .env
 ```

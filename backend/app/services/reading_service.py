@@ -6,7 +6,7 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, time
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.reading import ReadingAttempt, ReadingExercise
@@ -239,3 +239,47 @@ async def process_exercise_attempt(
         "total_questions": len(answers),
         "xp_earned": xp_earned,
     }
+
+
+async def get_user_history(
+    user_id: int,
+    db: AsyncSession,
+    skip: int = 0,
+    limit: int = 10,
+    target_language: str | None = None,
+):
+    stmt = (
+        select(ReadingAttempt, ReadingExercise)
+        .join(ReadingExercise, ReadingAttempt.exercise_id == ReadingExercise.id)
+        .where(ReadingAttempt.user_id == user_id)
+        .order_by(desc(ReadingAttempt.completed_at))
+        .offset(skip)
+        .limit(limit)
+    )
+
+    if target_language:
+        stmt = stmt.where(ReadingExercise.target_language == target_language)
+
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    total_stmt = (
+        select(ReadingAttempt.id)
+        .join(ReadingExercise, ReadingAttempt.exercise_id == ReadingExercise.id)
+        .where(ReadingAttempt.user_id == user_id)
+    )
+    if target_language:
+        total_stmt = total_stmt.where(ReadingExercise.target_language == target_language)
+    total_result = await db.execute(total_stmt)
+    total = len(total_result.all())
+
+    return rows, total
+
+
+async def submit_attempt(
+    user_id: int,
+    exercise_id: int,
+    answers: list[str],
+    db: AsyncSession,
+) -> dict[str, Any]:
+    return await process_exercise_attempt(user_id, exercise_id, answers, db)

@@ -407,6 +407,116 @@ async def get_today_lessons(
     )
 
 
+@router.post("/generate-lesson/{week_number}/{day_number}", status_code=201)
+@limiter.limit("10/minute")
+async def generate_lesson_on_demand(
+    request: Request,
+    week_number: int,
+    day_number: int,
+    plan: StudyPlan = Depends(get_active_study_plan),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Generate a lesson on-demand for the given week and day."""
+    if week_number < 1 or week_number > plan.duration_weeks:
+        raise HTTPException(status_code=422, detail="Invalid week number")
+    if day_number < 1 or day_number > plan.days_per_week:
+        raise HTTPException(status_code=422, detail="Invalid day number")
+
+    existing = await db.execute(
+        select(Lesson).where(
+            Lesson.study_plan_id == plan.id,
+            Lesson.week_number == week_number,
+            Lesson.day_number == day_number,
+        )
+    )
+    existing_lesson = existing.scalar_one_or_none()
+    if existing_lesson:
+        return {"lesson_id": existing_lesson.id}
+
+    # Get the lesson config from the plan
+    generated_plan = plan.generated_plan
+    week_plan = None
+    for wp in generated_plan.get("weekly_plan", []):
+        if wp.get("week") == week_number:
+            week_plan = wp
+            break
+    if not week_plan:
+        raise HTTPException(status_code=404, detail="Week not found in plan")
+
+    day_plan = None
+    for d in week_plan.get("days", []):
+        if d.get("day") == day_number:
+            day_plan = d
+            break
+    if not day_plan:
+        raise HTTPException(status_code=404, detail="Day not found in plan")
+
+    unit_id = day_plan.get("unit_id", "")
+    grammar_points = day_plan.get("grammar_points", [])
+    vocabulary_set_ids = day_plan.get("vocabulary_set_ids", [])
+    previous_lessons = [
+        {
+            "title": lesson.title,
+            "lesson_type": lesson.lesson_type,
+            "content": lesson.content,
+        }
+        for lesson in (
+            await db.execute(
+                select(Lesson).where(
+                    Lesson.study_plan_id == plan.id,
+                    Lesson.unit_id == unit_id,
+                )
+            )
+        ).scalars()
+    ]
+    content = await generate_lesson(
+        cefr_level=plan.cefr_level,
+        lesson_type=day_plan["lesson_type"],
+        topic=day_plan["title"],
+        week=week_number,
+        day=day_number,
+        unit_id=unit_id,
+        grammar_points=grammar_points,
+        vocabulary_set_ids=vocabulary_set_ids,
+        target_language=plan.target_language,
+        native_language=current_user.native_language,
+        previous_lessons=previous_lessons,
+    )
+
+    content_dict = content.model_dump()
+    exercises_data = content_dict.get("exercises") or []
+    if not exercises_data:
+        raise HTTPException(status_code=502, detail="Generated lesson has no exercises")
+
+    lesson = Lesson(
+        study_plan_id=plan.id,
+        title=day_plan["title"],
+        lesson_type=day_plan["lesson_type"],
+        cefr_level=plan.cefr_level,
+        week_number=week_number,
+        day_number=day_number,
+        unit_id=unit_id,
+        content=content_dict,
+    )
+    db.add(lesson)
+    await db.flush()
+    for exercise_data in exercises_data:
+        db.add(
+            Exercise(
+                lesson_id=lesson.id,
+                exercise_type=exercise_data.get("type", "multiple_choice"),
+                question=exercise_data.get("question", ""),
+                options=exercise_data.get("options"),
+                correct_answer=exercise_data.get("correct", ""),
+                explanation=exercise_data.get("explanation"),
+            )
+        )
+    await db.commit()
+    await db.refresh(lesson)
+    return {"lesson_id": lesson.id}
+
+
 @router.post("/skip-day")
 @limiter.limit("60/minute")
 async def skip_today(

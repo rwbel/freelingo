@@ -20,6 +20,8 @@ interface Props {
   lessons: Lesson[]
   onClose: () => void
   onStartLesson: (lessonId: number) => void
+  onGenerateLesson?: (week: number, day: number) => Promise<void>
+  isGenerating?: boolean
 }
 
 export default function UnitDrawer({
@@ -27,6 +29,8 @@ export default function UnitDrawer({
   lessons,
   onClose,
   onStartLesson,
+  onGenerateLesson,
+  isGenerating,
 }: Props) {
   const t = useTranslations('plan')
   const tCommon = useTranslations('common')
@@ -160,6 +164,15 @@ export default function UnitDrawer({
                         : lesson.action === 'continue'
                           ? t('resume')
                           : `${tCommon('start')} →`}
+                    </button>
+                  )}
+                  {lesson.id == null && (
+                    <button
+                      disabled={isGenerating}
+                      onClick={() => void onGenerateLesson?.(lesson.week, lesson.day)}
+                      className="border-fl-border text-fl-muted-1 hover:border-fl-border-2 hover:text-fl-fg min-w-24 shrink-0 border px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase transition-colors disabled:opacity-40"
+                    >
+                      {t('generateLesson')}
                     </button>
                   )}
                 </div>
