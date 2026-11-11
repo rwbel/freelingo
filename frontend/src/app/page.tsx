@@ -189,6 +189,15 @@ export default async function Home() {
               {startLabel}
               <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
             </Link>
+            {!hasSession && allowRegistration && startLabel !== t('startFree') && (
+              <Link
+                href="/register"
+                className="bg-fl-accent text-fl-accent-fg hover:bg-fl-accent/90 focus-visible:outline-fl-accent inline-flex items-center justify-center gap-2 border px-6 py-3 font-sans text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 motion-reduce:transition-none"
+              >
+                {t('startFree')}
+                <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+              </Link>
+            )}
             <a
               href="#features"
               className="border-fl-border text-fl-muted-1 hover:text-fl-fg hover:border-fl-border-2 focus-visible:outline-fl-accent inline-flex items-center justify-center gap-2 border px-6 py-3 font-sans text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 motion-reduce:transition-none"
