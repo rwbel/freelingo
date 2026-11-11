@@ -359,6 +359,34 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* Registration CTA */}
+        {!hasSession && allowRegistration && (
+          <ScrollReveal>
+            <section className="mx-auto w-full max-w-5xl scroll-mt-20 px-6 pb-16">
+              <div className="border-fl-border bg-fl-surface border rounded-xl p-8 md:p-12 text-center">
+                <h2 className="text-fl-fg mb-4 font-sans text-2xl font-bold tracking-tight md:text-3xl">
+                  {t('ctaRegister.title')}
+                </h2>
+                <p className="text-fl-muted-1 mb-8 max-w-2xl mx-auto font-sans text-base leading-relaxed">
+                  {t('ctaRegister.description')}
+                </p>
+                <Link
+                  href="/register"
+                  className="bg-fl-accent text-fl-accent-fg hover:bg-fl-accent/90 focus-visible:outline-fl-accent inline-flex items-center justify-center gap-3 px-8 py-4 text-center font-sans text-base font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 motion-reduce:transition-none"
+                >
+                  {t('ctaRegister.button')}
+                  <ArrowRight className="size-5 shrink-0" aria-hidden="true" />
+                </Link>
+                {stripeEnabled && (
+                  <p className="text-fl-muted-1 mt-4 max-w-lg mx-auto font-sans text-sm leading-relaxed">
+                    {t(freemiumTrialEnabled ? 'freeTrialNote' : 'freeNote')}
+                  </p>
+                )}
+              </div>
+            </section>
+          </ScrollReveal>
+        )}
+
         {/* Reviews */}
         <ScrollReveal>
           <LandingReviewsCarousel reviews={reviews} summary={reviewSummary} />
@@ -382,7 +410,7 @@ export default async function Home() {
               {
                 key: 'selfHosted',
                 Icon: Server,
-                href: 'https://github.com/artcc/freelingo#quick-start',
+                href: 'https://github.com/rwbel/freelingo#quick-start',
               },
             ].map(({ key, Icon, href }) => (
               <article
@@ -467,7 +495,7 @@ export default async function Home() {
             </h2>
             <div className="flex flex-col gap-2">
               <a
-                href="https://github.com/artcc/freelingo"
+                href="https://github.com/rwbel/freelingo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-fl-hint text-fl-muted-3 hover:text-fl-muted-1 font-mono tracking-widest uppercase transition-colors"

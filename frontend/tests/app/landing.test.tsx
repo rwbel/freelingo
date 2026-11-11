@@ -327,10 +327,10 @@ describe('Landing Home', () => {
       render(await Home())
 
       expect(screen.queryAllByText('freeTrialNote')).toHaveLength(
-        freemiumTrialEnabled ? 2 : 0
+        freemiumTrialEnabled ? 3 : 0
       )
       expect(screen.queryAllByText('freeNote')).toHaveLength(
-        freemiumTrialEnabled ? 0 : 2
+        freemiumTrialEnabled ? 0 : 3
       )
       expect(
         screen.getByText(
@@ -374,7 +374,7 @@ describe('Landing Home', () => {
     ).toHaveAttribute('href', 'https://freelingo.app/login')
     expect(
       within(modes).getByRole('link', { name: 'modes.selfHosted.cta' })
-    ).toHaveAttribute('href', 'https://github.com/artcc/freelingo#quick-start')
+    ).toHaveAttribute('href', 'https://github.com/rwbel/freelingo#quick-start')
     expect(container.querySelector('a[href^="/register"]')).toBeNull()
   })
 
@@ -470,7 +470,7 @@ describe('Landing Home', () => {
       config.stripe_enabled = stripeEnabled
       render(await Home())
       expect(screen.queryAllByText('freeNote')).toHaveLength(
-        stripeEnabled ? 2 : 0
+        stripeEnabled ? 3 : 0
       )
     }
   )

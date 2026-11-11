@@ -61,6 +61,11 @@
     "heroSub": "Un camino para aprender idiomas: lecciones a tu nivel, ejercicios y juegos para reforzar, y conversaciones por voz con tu compañero de aprendizaje con IA.",
     "startFree": "Empieza a aprender gratis",
     "freeNote": "Sin tarjeta. El acceso gratuito tiene límites de uso; puedes ampliar con Premium.",
+    "ctaRegister": {
+      "title": "¿Listo para empezar?",
+      "description": "Crea tu cuenta gratis y comienza tu plan de aprendizaje personalizado hoy mismo. Sin tarjeta de crédito, sin compromiso.",
+      "button": "Registrarse gratis"
+    },
     "seoTitle": "FreeLingo: aprende idiomas con un plan y Lingu",
     "seoDescription": "Aprende idiomas de A1 a C2 con un plan personalizado, ejercicios y juegos. Practica lo aprendido en conversaciones con Lingu, tu tutor con IA.",
     "journey": {
