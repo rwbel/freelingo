@@ -72,10 +72,7 @@ export default function OnboardingPage() {
   const checkoutRequest = useRef<AbortController | null>(null)
   useEffect(() => () => checkoutRequest.current?.abort(), [])
 
-  const targetLanguageName = tLang(
-    getLanguageByCode(targetLanguage)?.iso639 ??
-      DEFAULT_TARGET_LANGUAGE.split('-')[0]
-  )
+  const targetLanguageName = tLang(targetLanguage)
 
   useEffect(() => {
     loadConfig()

@@ -117,9 +117,10 @@ class Settings(BaseSettings):
 
     # Multi-language — operator-configured subset of supported target languages.
     AVAILABLE_TARGET_LANGUAGES: list[str] = [
-        "es-ES",
         "ast-ES",
-    ]
+        "es-ES",
+        "en-GB",
+    ],
 
     @field_validator(
         "DEFAULT_CONVERSATION_WEEKLY_SESSIONS",

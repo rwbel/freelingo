@@ -53,18 +53,18 @@ function withCapabilities(
 
 export const TARGET_LANGUAGE_CATALOG: TargetLanguage[] = [
   withCapabilities({
-    code: 'es-ES',
-    name: 'Español',
-    nameEn: 'Spanish',
-    flagPath: '/flags/spain.jpg',
-    iso639: 'es',
-  }),
-  withCapabilities({
     code: 'ast-ES',
     name: 'Asturianu',
     nameEn: 'Asturian',
     flagPath: '/flags/asturias.jpg',
     iso639: 'ast',
+  }),
+  withCapabilities({
+    code: 'es-ES',
+    name: 'Español',
+    nameEn: 'Spanish',
+    flagPath: '/flags/spain.jpg',
+    iso639: 'es',
   }),
 ]
 
@@ -93,7 +93,7 @@ export function getTargetLanguageTextClass(code: string): string {
   return `${capability.fontClass} text-base leading-loose tracking-normal normal-case`
 }
 
-export const DEFAULT_TARGET_LANGUAGE = 'es-ES'
+export const DEFAULT_TARGET_LANGUAGE = 'ast-ES'
 
 const LOCALES_CAPITALIZE_LANGUAGE = new Set(['en', 'de', 'nl', 'tr'])
 
