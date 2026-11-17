@@ -1468,12 +1468,9 @@
     "supportedLanguages": "Available languages"
   },
   "targetLanguages": {
-    "es-ES": "Spanish",
-    "es": "Spanish",
-    "es-ES-description": "Spanish as spoken in Spain.",
     "ast-ES": "Asturian",
-    "ast": "Asturian",
-    "ast-ES-description": "Asturian as spoken in Asturias."
+    "en-GB": "en-GB",
+    "es-ES": "Spanish"
   },
   "onboarding": {
     "title": "Choose your language",

@@ -124,11 +124,19 @@ async function _apiFetch(
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  let res = await fetch(`${BASE_URL}${url}`, {
-    ...options,
-    headers,
-    credentials: 'include',
-  })
+  // 30-second timeout to prevent indefinite hangs (e.g. backend unreachable)
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('API request timeout')), 30_000)
+  )
+
+  let res = await Promise.race([
+    fetch(`${BASE_URL}${url}`, {
+      ...options,
+      headers,
+      credentials: 'include',
+    }),
+    timeoutPromise,
+  ])
 
   if (res.status === 401 && token) {
     const state = currentSession(sessionVersion)

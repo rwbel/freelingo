@@ -17,7 +17,7 @@ Active-language lifecycle, plan isolation, and language deletion belong to
 
 ## Supported codes
 
-The application recognizes `en-GB`, `en-US`, `de-DE`, `es-ES`, `fr-FR`, `it-IT`, `nl-NL`, `pl-PL`, `pt-BR`, `pt-PT`, `ja-JP`, `ko-KR`, `ru-RU`, `sv-SE`, and `zh-CN`.
+The application recognizes `en-GB`, `es-ES`, and `ast-ES`.
 
 Backend `SUPPORTED_TARGET_LANGUAGES` and the frontend catalog must represent the same canonical set.
 Validated account flows compare exact canonical strings; there is no general backend BCP-47 parser or

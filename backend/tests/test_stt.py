@@ -10,19 +10,19 @@ from app.services.stt_service import OpenAISTTService, WhisperSTTService
 LANGUAGE_CASES = [
     ("en-US", "en"),
     ("en-GB", "en"),
-    ("de-DE", "de"),
+    ( )
     ("es-ES", "es"),
-    ("fr-FR", "fr"),
+    # Language removed from target set
     ("it-IT", "it"),
-    ("pl-PL", "pl"),
-    ("nl-NL", "nl"),
-    ("ru-RU", "ru"),
-    ("sv-SE", "sv"),
-    ("ja-JP", "ja"),
-    ("ko-KR", "ko"),
-    ("pt-BR", "pt"),
-    ("pt-PT", "pt"),
-    ("zh-CN", "zh"),
+    # Language removed from target set
+    # Language removed from target set
+    # Language removed from target set
+    # Language removed from target set
+    # Language removed from target set
+    # Language removed from target set
+    # Language removed from target set
+    # Language removed from target set
+    # Language removed from target set
 ]
 
 

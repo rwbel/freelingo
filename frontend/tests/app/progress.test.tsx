@@ -112,7 +112,7 @@ describe('progress page', () => {
       responseFor(url, 777)
     )
     act(() =>
-      useLanguageStore.setState({ activeLanguage: getLanguageByCode('de-DE')! })
+      useLanguageStore.setState({ activeLanguage: getLanguageByCode('en-GB') })
     )
     expect(await screen.findByText('777')).toBeInTheDocument()
     await act(async () =>
@@ -132,7 +132,7 @@ describe('progress page', () => {
       url === '/api/study-plan/current' ? json(null) : responseFor(url)
     )
     act(() =>
-      useLanguageStore.setState({ activeLanguage: getLanguageByCode('de-DE')! })
+      useLanguageStore.setState({ activeLanguage: getLanguageByCode('en-GB') })
     )
     expect(screen.queryByText('125')).not.toBeInTheDocument()
     await waitFor(() =>
@@ -167,7 +167,7 @@ describe('progress page', () => {
       responseFor(url, 777)
     )
     act(() =>
-      useLanguageStore.setState({ activeLanguage: getLanguageByCode('de-DE')! })
+      useLanguageStore.setState({ activeLanguage: getLanguageByCode('en-GB') })
     )
     expect(await screen.findByText('777')).toBeInTheDocument()
     await act(async () =>
@@ -210,7 +210,7 @@ describe('progress page', () => {
       if (url === '/api/languages') return json({}, 503)
       return responseFor(url)
     })
-    expect(await useLanguageStore.getState().switchLanguage('de-DE')).toBe(
+    useLanguageStore.setState({ activeLanguage: getLanguageByCode('en-GB') })
       false
     )
     expect(useLanguageStore.getState().activeLanguage?.code).toBe('en-GB')
@@ -226,17 +226,17 @@ describe('progress page', () => {
     mockApiFetch.mockImplementation(async (url: string) => {
       if (url === '/api/languages') {
         return json({
-          languages: [{ target_language: 'de-DE', is_active: true }],
-          all_supported_languages: ['en-GB', 'de-DE'],
+          languages: [{ target_language: 'en-GB', is_active: true }],
+          all_supported_languages: ['en-GB'],
         })
       }
       return responseFor(url, 777)
     })
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
     expect(await screen.findByText('777')).toBeInTheDocument()
-    expect(mockApiFetch).toHaveBeenCalledWith('/api/vocabulary?language=de-DE')
+    expect(mockApiFetch).toHaveBeenCalledWith('/api/vocabulary?language=en-GB')
     expect(mockApiFetch).toHaveBeenCalledWith(
-      '/api/curriculum/A1?language=de-DE'
+      '/api/curriculum/A1?language=en-GB'
     )
     expect(mockApiFetch).not.toHaveBeenCalledWith(
       '/api/curriculum/A1?language=en-GB'
@@ -284,14 +284,14 @@ describe('progress page', () => {
     mockApiFetch.mockImplementation(async (url: string) => {
       if (url === '/api/languages') {
         return json({
-          languages: [{ target_language: 'ja-JP', is_active: true }],
+          languages: [{ target_language: 'en-GB', is_active: true }],
         })
       }
       return responseFor(url)
     })
     renderWithMessages(<ProgressPage />)
     expect(await screen.findByText('125')).toBeInTheDocument()
-    expect(mockApiFetch).toHaveBeenCalledWith('/api/vocabulary?language=ja-JP')
+    expect(mockApiFetch).toHaveBeenCalledWith('/api/vocabulary?language=en-GB')
     expect(mockApiFetch).not.toHaveBeenCalledWith(
       '/api/vocabulary?language=en-GB'
     )
@@ -335,7 +335,7 @@ describe('progress page', () => {
       await act(async () =>
         finish(
           json({
-            languages: [{ target_language: 'de-DE', is_active: true }],
+            languages: [{ target_language: 'en-GB', is_active: true }],
           })
         )
       )

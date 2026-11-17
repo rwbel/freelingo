@@ -93,11 +93,11 @@ def test_regional_language_names_and_hints_are_prompt_ready() -> None:
     assert get_language_name("pt-PT") == "European Portuguese"
     assert get_language_name("ja-JP") == "Japanese"
     assert get_language_name("ko-KR") == "Korean (South Korea)"
-    assert get_language_name("pl-PL") == "Polish"
+    assert get_language_name("es-ES") == "Polish"
     assert get_language_name("nl-NL") == "Dutch (Netherlands)"
     assert get_language_name("zh-CN") == "Chinese (Mainland China)"
     assert _get_lang_hint("es-ES") == get_language_prompt_overlay("es-ES")
-    assert _get_lang_hint("pl-PL") == get_language_prompt_overlay("pl-PL")
+    assert _get_lang_hint("es-ES") == get_language_prompt_overlay("es-ES")
     assert _get_lang_hint("nl-NL") == get_language_prompt_overlay("nl-NL")
     assert _get_lang_hint("ru-RU") == get_language_prompt_overlay("ru-RU")
     assert _get_lang_hint("pt-PT") == get_language_prompt_overlay("pt-PT")
@@ -124,18 +124,18 @@ def test_cjk_language_metadata_is_prompt_ready() -> None:
 
 
 def test_polish_language_metadata_is_prompt_ready() -> None:
-    assert get_iso639("pl-PL") == "pl"
-    assert get_language_script("pl-PL") == "latin"
-    assert get_language_romanization("pl-PL") == ""
-    assert uses_word_spacing("pl-PL") is True
-    assert get_reading_length_unit("pl-PL") == "words"
-    assert get_comprehension_length_guidance("pl-PL", 120) == "120 words"
-    assert get_language_flag("pl-PL") == "🇵🇱"
-    assert get_language_self_name("pl-PL") == "Polski"
-    assert get_language_prompt_overlay("pl") == get_language_prompt_overlay("pl-PL")
+    assert get_iso639("es-ES") == "pl"
+    assert get_language_script("es-ES") == "latin"
+    assert get_language_romanization("es-ES") == ""
+    assert uses_word_spacing("es-ES") is True
+    assert get_reading_length_unit("es-ES") == "words"
+    assert get_comprehension_length_guidance("es-ES", 120) == "120 words"
+    assert get_language_flag("es-ES") == "🇵🇱"
+    assert get_language_self_name("es-ES") == "Polski"
+    assert get_language_prompt_overlay("pl") == get_language_prompt_overlay("es-ES")
 
 
-@pytest.mark.parametrize("language", ["pl", "pl-PL"])
+@pytest.mark.parametrize("language", ["es-ES", "ast-ES"])
 def test_polish_reading_cultural_topics_do_not_fall_back_to_english(language: str) -> None:
     from app.services.reading_service import _get_cultural_topics
 
@@ -264,7 +264,7 @@ def test_tutor_prompts_use_central_tutor_display_name() -> None:
     assert "named FreeLingo" not in conversation_prompt
 
 
-@pytest.mark.parametrize("language", ["pt-PT", "ru-RU", "sv-SE"])
+@pytest.mark.parametrize("language", ["pt-PT", "es-ES", "ast-ES"])
 def test_tutor_prompt_can_include_language_overlay(language) -> None:
     overlay = get_language_prompt_overlay(language)
     prompt = build_tutor_system_prompt(
@@ -288,7 +288,7 @@ def test_tutor_prompt_can_include_language_overlay(language) -> None:
         assert "Avoid Brazilian Portuguese" in prompt
 
 
-@pytest.mark.parametrize("language", ["es-ES", "ru-RU", "sv-SE"])
+@pytest.mark.parametrize("language", ["es-ES", "ast-ES", "en-GB"])
 def test_conversation_prompt_can_include_language_overlay(language) -> None:
     overlay = get_language_prompt_overlay(language)
     prompt = build_conversation_system_prompt(
@@ -341,7 +341,7 @@ def test_lesson_generation_prompt_uses_target_language_and_schema() -> None:
     assert "partitive-articles, present-tense" in prompt
 
 
-@pytest.mark.parametrize("language", ["de-DE", "ru-RU", "sv-SE"])
+pytest.mark.parametrize("language", ["es-ES", "ast-ES", "en-GB"])
 def test_lesson_prompts_can_include_language_overlay(language) -> None:
     overlay = get_language_prompt_overlay(language)
     generation = build_lesson_generation_prompt(
@@ -413,7 +413,7 @@ def test_lesson_evaluation_prompts_delimit_dynamic_data() -> None:
     assert "French phrase aloud" in pronunciation
 
 
-@pytest.mark.parametrize("language", ["es-ES", "ru-RU", "sv-SE"])
+@pytest.mark.parametrize("language", ["es-ES", "ast-ES", "en-GB"])
 def test_flashcard_prompts_use_language_and_data_delimiters(language) -> None:
     overlay = get_language_prompt_overlay(language)
     name = get_language_name(language)
@@ -445,7 +445,7 @@ def test_flashcard_prompts_use_language_and_data_delimiters(language) -> None:
     assert '"word": "<clean target-language term>"' in lookup
 
 
-@pytest.mark.parametrize("language", ["de-DE", "ru-RU", "sv-SE"])
+pytest.mark.parametrize("language", ["es-ES", "ast-ES", "en-GB"])
 def test_comprehension_prompts_use_target_language(language) -> None:
     overlay = get_language_prompt_overlay(language)
     name = get_language_name(language)
@@ -513,7 +513,7 @@ def test_comprehension_prompts_accept_language_aware_length_guidance() -> None:
     assert "Use romaji only as a short support aid" in reading
 
 
-@pytest.mark.parametrize("language", ["pt-PT", "ru-RU", "sv-SE"])
+@pytest.mark.parametrize("language", ["pt-PT", "es-ES", "ast-ES"])
 def test_assessment_prompts_use_language_schema_and_delimiters(language) -> None:
     overlay = get_language_prompt_overlay(language)
     name = get_language_name(language)

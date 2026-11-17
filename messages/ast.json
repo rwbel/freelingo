@@ -300,12 +300,9 @@
     }
   },
   "targetLanguages": {
-    "es-ES": "Español",
-    "es": "español",
-    "es-ES-description": "Español faláu n'España.",
     "ast-ES": "Asturianu",
-    "ast": "asturianu",
-    "ast-ES-description": "Asturianu faláu n'Asturies."
+    "en-GB": "en-GB",
+    "es-ES": "Español"
   },
   "onboarding": {
     "title": "Escoye to idioma",

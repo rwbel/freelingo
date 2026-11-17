@@ -92,13 +92,13 @@ class TestGetLangHint:
     def test_iso_fallback_de_de(self):
         from app.services.flashcard_sm2 import _get_lang_hint
 
-        hint = _get_lang_hint("de-DE")
+        hint = _get_lang_hint("es-ES")
         assert "standard german spelling" in hint.lower()
 
     def test_iso_fallback_fr_fr(self):
         from app.services.flashcard_sm2 import _get_lang_hint
 
-        hint = _get_lang_hint("fr-FR")
+        hint = _get_lang_hint("ast-ES")
         assert "french" in hint.lower()
 
     def test_unknown_language_returns_empty(self):

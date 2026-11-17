@@ -237,20 +237,9 @@ and [.env.example](.env.example).
 Learn one language or several side by side. Each has its own A1–C2 curriculum, placement test,
 grammar reference, vocabulary and phrasebook.
 
-- **Chinese:** Mainland Mandarin, in simplified characters (`zh-CN`).
-- **Dutch:** Netherlands (`nl-NL`).
-- **English:** British (`en-GB`) and American (`en-US`).
-- **French** (`fr-FR`).
-- **German** (`de-DE`).
-- **Italian** (`it-IT`).
-- **Japanese** (`ja-JP`).
-- **Korean:** South Korea (`ko-KR`).
-- **Polish** (`pl-PL`).
-- **Portuguese:** Brazilian (`pt-BR`) and European (`pt-PT`).
-- **Russian** (`ru-RU`).
 - **Spanish:** Spain (`es-ES`).
-- **Swedish:** Sweden (`sv-SE`).
-
+- **Asturianu:** Asturias (`ast-ES`).
+- **English:** British (`en-GB`).
 Choose your first language during onboarding, then add more from **Settings → My Languages**.
 Your plans, progress and flashcards stay separate for each language, including regional variants.
 On self-hosted installations, `AVAILABLE_TARGET_LANGUAGES` controls which options are available.
